@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cn.funkt"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     maven { url = uri("https://maven.aliyun.com/repository/public") }

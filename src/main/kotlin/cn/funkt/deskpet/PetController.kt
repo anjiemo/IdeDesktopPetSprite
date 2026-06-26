@@ -27,8 +27,8 @@ import javax.swing.Timer
  * 项目级状态机：汇总 sync / 编译 / gradle 任务 / 运行 等事件，
  * 计算出当前应展示的宠物状态并推给悬浮窗。
  *
- * 所有可变状态（active 集合、flashTimer、window）只在 EDT 上读写，
- * 外部事件统一经 [onUi] 切到 EDT，天然无并发问题。
+ * 是否显示、尺寸、按状态响应等取自应用级 [DeskPetSettings]。
+ * 所有可变状态只在 EDT 上读写，外部事件统一经 [onUi] 切到 EDT。
  */
 @Service(Service.Level.PROJECT)
 class PetController(private val project: Project) : Disposable {
@@ -40,14 +40,22 @@ class PetController(private val project: Project) : Disposable {
     private val active = LinkedHashSet<String>()
     private var flashTimer: Timer? = null
 
+    private val settings get() = DeskPetSettings.getInstance()
+    private val projectKey get() = DeskPetSettings.keyOf(project)
+
+    /** 全局启用、且该项目未被「永久关闭」，才允许显示 */
+    private fun isAllowed(): Boolean = settings.enabled && !settings.isHidden(projectKey)
+
     /** 项目打开时调用：创建并展示待机宠物 */
     fun start() = onUi {
+        if (!isAllowed()) return@onUi
         ensureWindow()
         applyState(baseState())
     }
 
     /** 某项活动开始 */
     fun onStart(key: String) = onUi {
+        if (!settings.reactsTo(key) || !isAllowed()) return@onUi
         cancelFlash()
         active.add(key)
         applyState(baseState())
@@ -55,18 +63,32 @@ class PetController(private val project: Project) : Disposable {
 
     /**
      * 某项活动结束；success 决定成功/失败的短暂表情。
-     * flashResult=false 时不弹成功/失败表情，直接回到剩余状态（用于索引这类高频活动）。
+     * flashResult=false 时不弹成功/失败表情（用于索引这类高频活动）。
      */
     fun onFinish(key: String, success: Boolean, flashResult: Boolean = true) = onUi {
+        if (!settings.reactsTo(key)) return@onUi
         if (!active.remove(key)) return@onUi
         if (active.isEmpty() && flashResult) {
-            // 流水线全部完成 → 闪现成功 / 失败表情，随后回到待机
             flash(if (success) PetState.SUCCESS else PetState.ERROR)
         } else {
-            // 仍有其他活动在进行，或本活动不需要结果表情 → 直接切到当前应有状态
             cancelFlash()
             applyState(baseState())
         }
+    }
+
+    /** 设置变化后实时生效（配置页 Apply 调用） */
+    fun applySettings() = onUi {
+        if (!isAllowed()) {
+            // 总开关关闭或本项目被永久关闭 → 收起窗口
+            cancelFlash()
+            active.clear()
+            window?.dispose()
+            window = null
+            return@onUi
+        }
+        ensureWindow()
+        window?.setScale(settings.scale)
+        applyState(baseState())
     }
 
     /** 优先级：运行 > 构建/编译/Gradle 任务 > 同步 > 索引 > 待机 */
@@ -96,7 +118,7 @@ class PetController(private val project: Project) : Disposable {
     }
 
     private fun ensureWindow() {
-        if (disposed || window != null) return
+        if (disposed || !isAllowed() || window != null) return
         window = PetWindow(project).also { it.showPet() }
     }
 

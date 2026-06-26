@@ -32,12 +32,12 @@ import javax.swing.SwingUtilities
 
 /**
  * 桌面悬浮宠物窗口：无边框、置顶、透明背景、可拖拽、可调大小，位置自动记忆。
- * 仅在 EDT 上构造与操作。
+ * 尺寸取自应用级 [DeskPetSettings]。仅在 EDT 上构造与操作。
  */
-class PetWindow(@Suppress("unused") private val project: Project) : JWindow() {
+class PetWindow(private val project: Project) : JWindow() {
 
     private val props = PropertiesComponent.getInstance()
-    private val pet = PetComponent(loadScale())
+    private val pet = PetComponent(DeskPetSettings.getInstance().scale)
     private var dragOffset: Point? = null
 
     init {
@@ -61,6 +61,13 @@ class PetWindow(@Suppress("unused") private val project: Project) : JWindow() {
     }
 
     fun setState(state: PetState) = pet.setState(state)
+
+    /** 应用尺寸（配置页 / 右键改尺寸时调用） */
+    fun setScale(scale: Double) {
+        pet.scale = scale
+        pack()
+        keepOnScreen()
+    }
 
     private fun installInteractions() {
         val mouse = object : MouseAdapter() {
@@ -97,25 +104,30 @@ class PetWindow(@Suppress("unused") private val project: Project) : JWindow() {
             }
         })
         menu.addSeparator()
-        listOf("小" to 0.45, "中" to 0.62, "大" to 0.85).forEach { (name, s) ->
+        listOf("小" to "S", "中" to "M", "大" to "L").forEach { (name, code) ->
             menu.add(JMenuItem("尺寸：$name").apply {
                 addActionListener {
-                    pet.scale = s
-                    props.setValue(KEY_SCALE, s.toString())
-                    pack()
-                    keepOnScreen()
+                    val s = DeskPetSettings.getInstance()
+                    s.size = code
+                    setScale(s.scale)
                     saveLocation()
                 }
             })
         }
         menu.addSeparator()
-        menu.add(JMenuItem("隐藏宠物（重开项目恢复）").apply {
+        // 临时隐藏：仅隐藏窗口，重开项目后恢复
+        menu.add(JMenuItem("临时隐藏（重开项目恢复）").apply {
             addActionListener { this@PetWindow.isVisible = false }
+        })
+        // 永久关闭：写入设置，需在 Settings 中重新开启
+        menu.add(JMenuItem("永久关闭（需在设置中开启）").apply {
+            addActionListener {
+                DeskPetSettings.getInstance().setHidden(DeskPetSettings.keyOf(project), true)
+                this@PetWindow.isVisible = false
+            }
         })
         menu.show(pet, e.x, e.y)
     }
-
-    private fun loadScale(): Double = props.getValue(KEY_SCALE)?.toDoubleOrNull() ?: 0.62
 
     private fun restoreLocation() {
         val x = props.getInt(KEY_X, UNSET)
@@ -162,6 +174,5 @@ class PetWindow(@Suppress("unused") private val project: Project) : JWindow() {
         const val UNSET = Int.MIN_VALUE
         const val KEY_X = "deskpet.x"
         const val KEY_Y = "deskpet.y"
-        const val KEY_SCALE = "deskpet.scale"
     }
 }

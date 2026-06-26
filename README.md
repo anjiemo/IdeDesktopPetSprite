@@ -1,5 +1,7 @@
 # IDE Desktop Pet Sprite（IDE桌面宠物精灵）
 
+[![Release](https://img.shields.io/github/v/release/anjiemo/IdeDesktopPetSprite)](https://github.com/anjiemo/IdeDesktopPetSprite/releases/latest) [![License](https://img.shields.io/github/license/anjiemo/IdeDesktopPetSprite)](LICENSE) [![Downloads](https://img.shields.io/github/downloads/anjiemo/IdeDesktopPetSprite/total)](https://github.com/anjiemo/IdeDesktopPetSprite/releases) [![Stars](https://img.shields.io/github/stars/anjiemo/IdeDesktopPetSprite)](https://github.com/anjiemo/IdeDesktopPetSprite/stargazers)
+
 一个 Android Studio / IntelliJ 插件：在 **Gradle Sync、构建/编译、运行/调试** 等不同状态下，
 于桌面显示一只会随状态变化的桌面悬浮宠物，并在成功 / 失败时给出表情反馈。宠物素材可替换（默认内置一只原创史莱姆 Gel）。
 

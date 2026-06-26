@@ -5,8 +5,12 @@
 <h1 align="center">IDE Desktop Pet Sprite</h1>
 
 <p align="center">
-  <strong>IDE 桌面宠物精灵 · 随 IDE 状态变化的桌面悬浮宠物</strong><br>
-  Gradle Sync / 建立索引 / 构建·编译 / 运行·调试 —— 每个状态都有专属动画与表情反馈
+  <strong>A desktop floating pet that reacts to your IDE's state</strong><br>
+  Gradle sync / indexing / build·compile / run·debug — each state has its own animation and expression
+</p>
+
+<p align="center">
+  <a href="docs/README.zh-CN.md">中文</a> · <strong>English</strong>
 </p>
 
 <p align="center">
@@ -16,58 +20,57 @@
   <a href="https://github.com/anjiemo/IdeDesktopPetSprite/stargazers"><img alt="stars" src="https://img.shields.io/github/stars/anjiemo/IdeDesktopPetSprite?style=flat-square"></a>
 </p>
 
-一个 Android Studio / IntelliJ 插件：在 **Gradle Sync、构建/编译、运行/调试** 等不同状态下，
-于桌面显示一只会随状态变化的桌面悬浮宠物，并在成功 / 失败时给出表情反馈。宠物素材可替换（默认内置一只原创史莱姆 Gel）。
+An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/debug** and other states, it shows a desktop floating pet that changes with the state and gives an expression on success / failure. The sprite is replaceable (a built-in original slime "Gel" by default).
 
-## 状态映射
+## State mapping
 
-| IDE 事件 | 来源监听 | 宠物状态 | 精灵图行 |
+| IDE event | Listener | Pet state | Sprite row |
 |---|---|---|---|
-| Gradle Sync 中 | `ExternalSystemTaskNotificationListener`（RESOLVE_PROJECT） | 思考 · `Sync 同步中` | 行 4 |
-| 建立索引中 | `DumbService.DUMB_MODE`（dumb mode 进入/退出） | 张望 · `Index 索引中` | 行 1 |
-| 构建 / 编译中 | `ProjectTaskListener` + Gradle EXECUTE_TASK | 奔跑 · `Build 构建中` | 行 2 |
-| 运行 / 调试中 | `ExecutionListener` | 奔跑(更快) · `Run 运行中` | 行 2 |
-| 成功完成 | 上述监听结束回调 | 跳跃 · `完成 ✓`（2.6s 后回待机） | 行 5 |
-| 失败 / 报错 | 上述监听结束回调 | 沮丧 · `出错 ✗`（2.6s 后回待机） | 行 3 |
-| 空闲 | —— | 待机 · `摸鱼中` | 行 0 |
+| Gradle sync | `ExternalSystemTaskNotificationListener` (RESOLVE_PROJECT) | Thinking | row 4 |
+| Indexing | `DumbService.DUMB_MODE` (enter / exit dumb mode) | Looking around | row 1 |
+| Build / compile | `ProjectTaskListener` + Gradle EXECUTE_TASK | Running | row 2 |
+| Run / debug | `ExecutionListener` | Running (faster) | row 2 |
+| Success | the end callbacks above | Jumping (back to idle after 2.6s) | row 5 |
+| Failure / error | the end callbacks above | Dejected (back to idle after 2.6s) | row 3 |
+| Idle | —— | Idle | row 0 |
 
-> 多个活动叠加时按 **运行 > 构建 > 同步 > 索引 > 待机** 取最高优先级展示。
-> 索引为高频活动，结束时不弹「完成 ✓」，直接静默回到当前应有状态。
+> When multiple activities overlap, the highest priority is shown: **run > build > sync > index > idle**.
+> Indexing is frequent, so it does not pop a "Done" on finish — it silently returns to the current state.
 
-## 交互
+## Interaction
 
-- 鼠标左键拖动可移动；位置自动记忆（多屏安全，越界自动回角落）。
-- 右键菜单：重置位置 / 调整尺寸（小·中·大）/ 隐藏宠物（重开项目恢复）。
-- 悬浮窗置顶、透明背景、不抢占编辑器焦点。
+- Drag with the left mouse button; position is remembered automatically (multi-monitor safe, snaps back to a corner if off-screen).
+- Right-click menu: reset position / resize (S · M · L) / hide pet (restored on reopening the project).
+- Always-on-top, transparent background, never steals editor focus.
 
-## 构建与安装
+## Build & install
 
-> 本机需 JDK 17。若 `JAVA_HOME` 未指向 17，请先设置；wrapper 已固定 Gradle 8.14.5。
+> Requires JDK 17 locally. If `JAVA_HOME` doesn't point to 17, set it first; the wrapper is pinned to Gradle 8.14.5.
 
 ```bash
-# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.0.zip）
+# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.0.zip)
 ./gradlew buildPlugin
 ```
 
 ```bash
-# 在沙箱 IDE 中调试运行（默认拉取 IntelliJ IDEA Community 作为运行环境）
+# Debug-run in a sandbox IDE (pulls IntelliJ IDEA Community as the runtime by default)
 ./gradlew runIde
 ```
 
-安装到你的 Android Studio：
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.0.zip`**，重启即可。
-打开任意项目后桌面右下角即出现宠物。
+Install into your Android Studio:
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.0.zip`**, then restart.
+Open any project and the pet appears at the bottom-right of the desktop.
 
-### 想用本机真实 IDE（如 Android Studio）作为调试沙箱？
+### Want to use your local IDE (e.g. Android Studio) as the debug sandbox?
 
-编译 SDK 请保持 `intellijIdeaCommunity("2024.2.5")` 不变（用本机新版 AS 当编译 SDK 会因 Kotlin 版本倒挂而编译失败）。
-改用已配置好的 `runLocalIde` 任务即可——它仍以发布版 SDK 编译，但沙箱启动 `localPath` 指定的本机 IDE：
+Keep the compile SDK as `intellijIdeaCommunity("2024.2.5")` (using a newer local AS as the compile SDK fails to build due to a Kotlin version inversion).
+Use the preconfigured `runLocalIde` task instead — it still compiles against the released SDK but launches the local IDE pointed to by `localPath`:
 
 ```bash
 ./gradlew runLocalIde
 ```
 
-要换成别的 IDE，改 `build.gradle.kts` 中 `runLocalIde` 的 `localPath`：
+To use a different IDE, change `localPath` of `runLocalIde` in `build.gradle.kts`:
 
 ```kotlin
 intellijPlatformTesting {
@@ -79,26 +82,27 @@ intellijPlatformTesting {
 }
 ```
 
-## 更换宠物素材
+## Replace the pet sprite
 
-默认精灵图为一张网格精灵表：**8 列 × 9 行，每帧 192×208**，每行对应一种动作
-（0=待机, 1=张望, 2=奔跑, 3=失败, 4=思考, 5=跳跃）。
-替换 `src/main/resources/pets/gel-slime.png` 为任意同规格精灵图即可（如为 webp 请先转 png）。
-如尺寸不同，调整 `PetSprite.kt` 中的 `FRAME_W/FRAME_H/COLS/ROWS`。
+The default sprite is a grid sprite sheet: **8 cols × 9 rows, 192×208 per frame**, each row is one action
+(0=idle, 1=look, 2=run, 3=fail, 4=think, 5=jump).
+Replace `src/main/resources/pets/gel-slime.png` with any sprite sheet of the same spec (convert webp to png first if needed).
+If the size differs, adjust `FRAME_W/FRAME_H/COLS/ROWS` in `PetSprite.kt`.
 
-## 作者
+## Author
 
 anjiemo · <2695734816@qq.com> · https://github.com/anjiemo/
 
-## 素材来源
+## Asset sources
 
-默认精灵图（`pets/gel-slime.png`）为 anjiemo 原创的果冻史莱姆「Gel」，版权归 anjiemo 所有，随项目以 Apache-2.0 提供，可自由使用、修改、再分发。
-项目图标 / Logo（`docs/assets/logo.png`）为 anjiemo 原创，**版权归 anjiemo 所有，保留一切权利**；它是本项目的标识，**不在 Apache-2.0 的再利用授权范围内**（参见 Apache-2.0 §6 商标条款），未经书面许可不得用于其它项目、产品或商业用途。
-你也可以替换为自备的同规格精灵图；导入第三方素材时，其授权由该素材各自来源决定。
+The default sprite (`pets/gel-slime.png`) is the original jelly slime "Gel" by anjiemo, copyright anjiemo, provided with the project under Apache-2.0 — free to use, modify and redistribute.
+The project icon / logo (`docs/assets/logo.png`) is an original work by anjiemo, **copyright anjiemo, all rights reserved**; it is the project's identity mark and is **not covered by the Apache-2.0 reuse grant** (cf. Apache-2.0 §6 Trademarks). Do not use it for other projects, products, or commercial purposes without written permission.
 
-## 许可
+You may also replace it with your own sprite sheet of the same spec; for third-party assets, licensing is determined by their respective sources.
 
-Copyright © 2026 **anjiemo**（<https://github.com/anjiemo>）。
+## License
 
-本项目代码与默认内置精灵图的**版权归 anjiemo 所有**，基于 [Apache License 2.0](LICENSE) 开源（项目图标 / Logo 除外，其版权要求见「素材来源」）：
-在保留版权声明与许可声明（见 `LICENSE` 与 `NOTICE`）的前提下，允许自由使用、修改与再分发。
+Copyright © 2026 **anjiemo** (<https://github.com/anjiemo>).
+
+The project's code and built-in default sprite are **copyright anjiemo**, open-sourced under [Apache License 2.0](LICENSE) (the project icon / logo is excluded — see Asset sources):
+you may freely use, modify and redistribute them provided the copyright and license notices (see `LICENSE` and `NOTICE`) are retained.

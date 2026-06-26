@@ -1,0 +1,12 @@
+IDE桌面宠物精灵 (IdeDesktopPetSprite)
+Copyright 2026 anjiemo (https://github.com/anjiemo)
+
+This product is developed and owned by anjiemo.
+Licensed under the Apache License, Version 2.0 (see the LICENSE file).
+
+The bundled default sprite (src/main/resources/pets/gel-slime.png) is an
+original work by anjiemo and contains no third-party artwork.
+
+Development tooling under the tools/ directory is the author's proprietary
+work, is NOT licensed under the Apache License 2.0, and is not part of the
+distributed plugin. See each such file's own header for its terms.

@@ -1,0 +1,133 @@
+/*
+ * Copyright 2026 anjiemo
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package cn.funkt.deskpet
+
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.project.Project
+import javax.swing.Timer
+
+/**
+ * 项目级状态机：汇总 sync / 编译 / gradle 任务 / 运行 等事件，
+ * 计算出当前应展示的宠物状态并推给悬浮窗。
+ *
+ * 所有可变状态（active 集合、flashTimer、window）只在 EDT 上读写，
+ * 外部事件统一经 [onUi] 切到 EDT，天然无并发问题。
+ */
+@Service(Service.Level.PROJECT)
+class PetController(private val project: Project) : Disposable {
+
+    @Volatile
+    private var disposed = false
+
+    private var window: PetWindow? = null
+    private val active = LinkedHashSet<String>()
+    private var flashTimer: Timer? = null
+
+    /** 项目打开时调用：创建并展示待机宠物 */
+    fun start() = onUi {
+        ensureWindow()
+        applyState(baseState())
+    }
+
+    /** 某项活动开始 */
+    fun onStart(key: String) = onUi {
+        cancelFlash()
+        active.add(key)
+        applyState(baseState())
+    }
+
+    /**
+     * 某项活动结束；success 决定成功/失败的短暂表情。
+     * flashResult=false 时不弹成功/失败表情，直接回到剩余状态（用于索引这类高频活动）。
+     */
+    fun onFinish(key: String, success: Boolean, flashResult: Boolean = true) = onUi {
+        if (!active.remove(key)) return@onUi
+        if (active.isEmpty() && flashResult) {
+            // 流水线全部完成 → 闪现成功 / 失败表情，随后回到待机
+            flash(if (success) PetState.SUCCESS else PetState.ERROR)
+        } else {
+            // 仍有其他活动在进行，或本活动不需要结果表情 → 直接切到当前应有状态
+            cancelFlash()
+            applyState(baseState())
+        }
+    }
+
+    /** 优先级：运行 > 构建/编译/Gradle 任务 > 同步 > 索引 > 待机 */
+    private fun baseState(): PetState = when {
+        KEY_RUN in active -> PetState.RUNNING
+        KEY_COMPILE in active || KEY_GRADLE in active -> PetState.BUILDING
+        KEY_SYNC in active -> PetState.SYNCING
+        KEY_INDEX in active -> PetState.INDEXING
+        else -> PetState.IDLE
+    }
+
+    private fun flash(state: PetState) {
+        cancelFlash()
+        applyState(state)
+        flashTimer = Timer(FLASH_MS) {
+            cancelFlash()
+            applyState(baseState())
+        }.apply {
+            isRepeats = false
+            start()
+        }
+    }
+
+    private fun cancelFlash() {
+        flashTimer?.stop()
+        flashTimer = null
+    }
+
+    private fun ensureWindow() {
+        if (disposed || window != null) return
+        window = PetWindow(project).also { it.showPet() }
+    }
+
+    private fun applyState(state: PetState) {
+        if (disposed) return
+        ensureWindow()
+        window?.setState(state)
+    }
+
+    private fun onUi(block: () -> Unit) {
+        ApplicationManager.getApplication().invokeLater(
+            { if (!disposed) block() },
+            ModalityState.any(),
+        )
+    }
+
+    override fun dispose() {
+        disposed = true
+        cancelFlash()
+        window?.dispose()
+        window = null
+        active.clear()
+    }
+
+    companion object {
+        const val KEY_SYNC = "sync"
+        const val KEY_INDEX = "index"
+        const val KEY_COMPILE = "compile"
+        const val KEY_GRADLE = "gradle"
+        const val KEY_RUN = "run"
+
+        private const val FLASH_MS = 2600
+    }
+}

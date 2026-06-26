@@ -1,6 +1,20 @@
-# IDE Desktop Pet Sprite（IDE桌面宠物精灵）
+<p align="center">
+  <img src="docs/assets/logo.png" width="120" alt="IDE Desktop Pet Sprite logo">
+</p>
 
-[![Release](https://img.shields.io/github/v/release/anjiemo/IdeDesktopPetSprite)](https://github.com/anjiemo/IdeDesktopPetSprite/releases/latest) [![License](https://img.shields.io/github/license/anjiemo/IdeDesktopPetSprite)](LICENSE) [![Downloads](https://img.shields.io/github/downloads/anjiemo/IdeDesktopPetSprite/total)](https://github.com/anjiemo/IdeDesktopPetSprite/releases) [![Stars](https://img.shields.io/github/stars/anjiemo/IdeDesktopPetSprite)](https://github.com/anjiemo/IdeDesktopPetSprite/stargazers)
+<h1 align="center">IDE Desktop Pet Sprite</h1>
+
+<p align="center">
+  <strong>IDE 桌面宠物精灵 · 随 IDE 状态变化的桌面悬浮宠物</strong><br>
+  Gradle Sync / 建立索引 / 构建·编译 / 运行·调试 —— 每个状态都有专属动画与表情反馈
+</p>
+
+<p align="center">
+  <a href="https://github.com/anjiemo/IdeDesktopPetSprite/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/anjiemo/IdeDesktopPetSprite?style=flat-square"></a>
+  <a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/anjiemo/IdeDesktopPetSprite?style=flat-square"></a>
+  <a href="https://github.com/anjiemo/IdeDesktopPetSprite/releases"><img alt="downloads" src="https://img.shields.io/github/downloads/anjiemo/IdeDesktopPetSprite/total?style=flat-square"></a>
+  <a href="https://github.com/anjiemo/IdeDesktopPetSprite/stargazers"><img alt="stars" src="https://img.shields.io/github/stars/anjiemo/IdeDesktopPetSprite?style=flat-square"></a>
+</p>
 
 一个 Android Studio / IntelliJ 插件：在 **Gradle Sync、构建/编译、运行/调试** 等不同状态下，
 于桌面显示一只会随状态变化的桌面悬浮宠物，并在成功 / 失败时给出表情反馈。宠物素材可替换（默认内置一只原创史莱姆 Gel）。
@@ -79,7 +93,7 @@ anjiemo · <2695734816@qq.com> · https://github.com/anjiemo/
 ## 素材来源
 
 默认内置精灵图为 anjiemo 原创的果冻史莱姆「Gel」（`pets/gel-slime.png`），版权归 anjiemo 所有，可自由使用、修改、再分发。
-你也可以替换为自备的同规格精灵图；导入第三方素材时，其授权由该素材各自来源决定。
+项目图标（`docs/assets/logo.png`）同为 anjiemo 原创。你也可以替换为自备的同规格精灵图；导入第三方素材时，其授权由该素材各自来源决定。
 
 ## 许可
 

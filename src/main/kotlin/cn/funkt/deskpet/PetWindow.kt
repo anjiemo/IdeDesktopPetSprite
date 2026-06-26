@@ -110,7 +110,7 @@ class PetWindow(@Suppress("unused") private val project: Project) : JWindow() {
         }
         menu.addSeparator()
         menu.add(JMenuItem("隐藏宠物（重开项目恢复）").apply {
-            addActionListener { isVisible = false }
+            addActionListener { this@PetWindow.isVisible = false }
         })
         menu.show(pet, e.x, e.y)
     }

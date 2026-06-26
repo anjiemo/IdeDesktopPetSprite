@@ -26,7 +26,7 @@
 
 ## 构建与安装
 
-> 本机需 JDK 17。若 `JAVA_HOME` 未指向 17，请先设置；wrapper 已固定 Gradle 8.11.1。
+> 本机需 JDK 17。若 `JAVA_HOME` 未指向 17，请先设置；wrapper 已固定 Gradle 8.14.5。
 
 ```bash
 # 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.0.zip）
@@ -42,12 +42,25 @@
 **Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.0.zip`**，重启即可。
 打开任意项目后桌面右下角即出现宠物。
 
-### 想用真实 AS 作为调试环境？
+### 想用本机真实 IDE（如 Android Studio）作为调试沙箱？
 
-把 `build.gradle.kts` 里的 `intellijIdeaCommunity("2024.2.5")` 换成：
+编译 SDK 请保持 `intellijIdeaCommunity("2024.2.5")` 不变（用本机新版 AS 当编译 SDK 会因 Kotlin 版本倒挂而编译失败）。
+改用已配置好的 `runLocalIde` 任务即可——它仍以发布版 SDK 编译，但沙箱启动 `localPath` 指定的本机 IDE：
+
+```bash
+./gradlew runLocalIde
+```
+
+要换成别的 IDE，改 `build.gradle.kts` 中 `runLocalIde` 的 `localPath`：
 
 ```kotlin
-local("D:/Program Files/Android/Android Studio")
+intellijPlatformTesting {
+    runIde {
+        register("runLocalIde") {
+            localPath.set(file("D:\\ProgramFiles\\Android\\StudioApps\\Android Studio 4"))
+        }
+    }
+}
 ```
 
 ## 更换宠物素材

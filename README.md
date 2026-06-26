@@ -92,12 +92,13 @@ anjiemo · <2695734816@qq.com> · https://github.com/anjiemo/
 
 ## 素材来源
 
-默认内置精灵图为 anjiemo 原创的果冻史莱姆「Gel」（`pets/gel-slime.png`），版权归 anjiemo 所有，可自由使用、修改、再分发。
-项目图标（`docs/assets/logo.png`）同为 anjiemo 原创。你也可以替换为自备的同规格精灵图；导入第三方素材时，其授权由该素材各自来源决定。
+默认精灵图（`pets/gel-slime.png`）为 anjiemo 原创的果冻史莱姆「Gel」，版权归 anjiemo 所有，随项目以 Apache-2.0 提供，可自由使用、修改、再分发。
+项目图标 / Logo（`docs/assets/logo.png`）为 anjiemo 原创，**版权归 anjiemo 所有，保留一切权利**；它是本项目的标识，**不在 Apache-2.0 的再利用授权范围内**（参见 Apache-2.0 §6 商标条款），未经书面许可不得用于其它项目、产品或商业用途。
+你也可以替换为自备的同规格精灵图；导入第三方素材时，其授权由该素材各自来源决定。
 
 ## 许可
 
 Copyright © 2026 **anjiemo**（<https://github.com/anjiemo>）。
 
-本项目（含代码与默认内置精灵图）的**版权归 anjiemo 所有**，基于 [Apache License 2.0](LICENSE) 开源：
+本项目代码与默认内置精灵图的**版权归 anjiemo 所有**，基于 [Apache License 2.0](LICENSE) 开源（项目图标 / Logo 除外，其版权要求见「素材来源」）：
 在保留版权声明与许可声明（见 `LICENSE` 与 `NOTICE`）的前提下，允许自由使用、修改与再分发。

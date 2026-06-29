@@ -38,7 +38,11 @@ object SpriteLoader {
         cache[c.id]?.let {
             return it
         }
-        val sheet = readFile(c.filePath)?.let { SpriteSheet(it) }
+        val path = c.filePath
+        if (path != null && PetdexClient.activeDownloads.contains(path)) {
+            return PetSprite.builtin
+        }
+        val sheet = readFile(path)?.let { SpriteSheet(it) }
         if (sheet != null) {
             cache[c.id] = sheet
             return sheet

@@ -41,6 +41,8 @@ object PetdexClient {
     private const val CONNECT_TIMEOUT = 5_000
     private const val READ_TIMEOUT = 15_000
 
+    val activeDownloads = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
     data class Pet(
         val slug: String,
         val displayName: String,
@@ -104,6 +106,8 @@ object PetdexClient {
         require(isAllowed(pet.spritesheetUrl)) { "非法的形象地址：${pet.spritesheetUrl}" }
         val file = cacheFileFor(pet)
         if (file.isFile && file.length() > 0) return file
+        val path = file.absolutePath
+        activeDownloads.add(path)
         try {
             HttpRequests.request(pet.spritesheetUrl)
                 .connectTimeout(CONNECT_TIMEOUT)
@@ -112,6 +116,8 @@ object PetdexClient {
         } catch (e: Throwable) {
             runCatching { file.delete() }
             throw e
+        } finally {
+            activeDownloads.remove(path)
         }
         return file
     }

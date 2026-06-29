@@ -18,6 +18,8 @@ package cn.funkt.deskpet.character
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.progress.EmptyProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -70,7 +72,7 @@ class PetGridView(
         val title: String,
         val subtitle: String,
         val character: PetCharacter,
-        val loadThumb: () -> BufferedImage?,
+        val loadThumb: (ProgressIndicator?) -> BufferedImage?,
     )
 
     private val grid = object : JPanel(GridLayout(0, columns, GAP, GAP)), Scrollable {
@@ -183,13 +185,17 @@ class PetGridView(
             return
         }
         val gen = generation
+        val indicator = EmptyProgressIndicator()
         cell.job = scope.launch {
-            val currentJob = coroutineContext[Job]
+            val currentJob = coroutineContext[Job]!!
+            val reg = currentJob.invokeOnCompletion {
+                indicator.cancel()
+            }
             var img: BufferedImage? = null
             try {
                 img = semaphore.withPermit {
                     withContext(Dispatchers.IO) {
-                        cell.item.loadThumb()
+                        cell.item.loadThumb(indicator)
                     }
                 }
                 ApplicationManager.getApplication().invokeLater({
@@ -211,6 +217,7 @@ class PetGridView(
                     if (gen == generation) cell.markFailed()
                 }, ModalityState.any())
             } finally {
+                reg.dispose()
                 ApplicationManager.getApplication().invokeLater({
                     if (cell.job === currentJob) {
                         cell.job = null

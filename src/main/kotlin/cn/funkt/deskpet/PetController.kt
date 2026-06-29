@@ -16,14 +16,19 @@
 
 package cn.funkt.deskpet
 
+import cn.funkt.deskpet.character.CharacterSource
+import cn.funkt.deskpet.character.PetCharacter
 import cn.funkt.deskpet.character.PetCharacterStore
+import cn.funkt.deskpet.character.PetdexClient
 import cn.funkt.deskpet.character.SpriteLoader
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import java.io.File
 import javax.swing.Timer
+import kotlinx.coroutines.*
 
 /**
  * 项目级状态机：汇总 sync / 编译 / gradle 任务 / 运行 等事件，
@@ -37,6 +42,8 @@ class PetController(private val project: Project) : Disposable {
 
     @Volatile
     private var disposed = false
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var window: PetWindow? = null
     private val active = LinkedHashSet<String>()
@@ -98,8 +105,17 @@ class PetController(private val project: Project) : Disposable {
     fun applyCharacter() = onUi {
         if (!isAllowed()) return@onUi
         ensureWindow()
-        window?.setSheet(currentSheet())
+        val c = PetCharacterStore.getInstance().characterFor(projectKey)
+        window?.setSheet(SpriteLoader.load(c))
         applyState(baseState())
+
+        // 如果是网络形象且本地文件不存在（说明尚未下载完就被选中使用），在后台启动下载
+        if (c.source == CharacterSource.PETDEX && !c.filePath.isNullOrBlank()) {
+            val file = File(c.filePath)
+            if (!file.isFile || file.length() == 0L) {
+                downloadActiveCharacter(c)
+            }
+        }
     }
 
     /** 解析本项目当前应使用的精灵图（形象） */
@@ -153,8 +169,40 @@ class PetController(private val project: Project) : Disposable {
         )
     }
 
+    private fun downloadActiveCharacter(c: PetCharacter) {
+        val slug = c.id.substringAfter("petdex:")
+        val url = c.spritesheetUrl ?: return
+        val pet = PetdexClient.Pet(
+            slug = slug,
+            displayName = c.displayName,
+            kind = "",
+            submittedBy = c.submittedBy,
+            spritesheetUrl = url,
+            petJsonUrl = "",
+            zipUrl = "",
+        )
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    PetdexClient.download(pet)
+                }
+                // 下载完成后，如果在下载期间用户没有换成别的宠物，则在 UI 线程应用新形象
+                ApplicationManager.getApplication().invokeLater({
+                    val current = PetCharacterStore.getInstance().characterFor(projectKey)
+                    if (current.id == c.id) {
+                        SpriteLoader.invalidate(c.id) // 确保重新加载刚刚下载的文件
+                        applyCharacter()
+                    }
+                }, ModalityState.any())
+            } catch (e: Exception) {
+                // 下载失败静默退出
+            }
+        }
+    }
+
     override fun dispose() {
         disposed = true
+        scope.cancel()
         cancelFlash()
         window?.dispose()
         window = null

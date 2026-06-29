@@ -22,6 +22,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -243,7 +244,7 @@ class CharacterPickerDialog(
             title = pet.displayName,
             subtitle = if (pet.submittedBy.isNotBlank()) "@${pet.submittedBy}" else pet.kind.ifBlank { "Petdex" },
             character = PetdexClient.toCharacter(pet),
-            loadThumb = { PetThumbnails.fromFile(id, PetdexClient.download(pet)) },
+            loadThumb = { indicator -> PetThumbnails.fromFile(id, PetdexClient.download(pet, indicator)) },
         )
     }
 
@@ -349,9 +350,14 @@ class CharacterPickerDialog(
                 title = c.displayName,
                 subtitle = c.subtitle,
                 character = c,
-                loadThumb = {
-                    if (c.isBuiltin) PetThumbnails.fromSheet(c.id, PetSprite.builtin)
-                    else c.filePath?.let { PetThumbnails.fromFile(c.id, File(it)) }
+                loadThumb = { _ ->
+                    if (c.isBuiltin) {
+                        PetThumbnails.fromSheet(c.id, PetSprite.builtin)
+                    } else {
+                        c.filePath?.let {
+                            PetThumbnails.fromFile(c.id, File(it))
+                        }
+                    }
                 },
             )
         })

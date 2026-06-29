@@ -77,12 +77,18 @@ class DeskPetConfigurable : Configurable {
         val showAll = JButton("全部显示").apply { addActionListener { setAll(true) } }
         val hideAll = JButton("全部隐藏").apply { addActionListener { setAll(false) } }
         val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
-            add(showSel); add(hideSel); add(showAll); add(hideAll)
+            add(showSel)
+            add(hideSel)
+            add(showAll)
+            add(hideAll)
         }
 
         val states = JPanel(FlowLayout(FlowLayout.LEFT, 12, 0)).apply {
             isOpaque = false
-            add(reactSync); add(reactIndex); add(reactBuild); add(reactRun)
+            add(reactSync)
+            add(reactIndex)
+            add(reactBuild)
+            add(reactRun)
         }
 
         // 默认形象
@@ -116,7 +122,8 @@ class DeskPetConfigurable : Configurable {
         }
         val pcButtons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
             isOpaque = false
-            add(setProjectCharBtn); add(followDefaultBtn)
+            add(setProjectCharBtn)
+            add(followDefaultBtn)
         }
         val pcRight = JPanel(BorderLayout()).apply {
             isOpaque = false

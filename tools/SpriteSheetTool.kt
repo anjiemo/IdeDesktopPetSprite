@@ -93,7 +93,8 @@ private fun drawFrame(g: Graphics2D, col: Int, row: Int) {
     when (kind) {
         0 -> { // 呼吸 + 偶尔眨眼
             val s = sin(tau)
-            h = 112 + 4 * s; w = 120 - 4 * s
+            h = 112 + 4 * s
+            w = 120 - 4 * s
             yOff = -3 * (0.5 + 0.5 * sin(tau))
         }
         1 -> { // 左右看 + 招手 + ！
@@ -103,12 +104,17 @@ private fun drawFrame(g: Graphics2D, col: Int, row: Int) {
         2 -> { // 前倾 + 挤压拉伸 + 迈步
             leanX = 11.0
             val s = sin(tau)
-            h = 112 + 11 * s; w = 122 - 9 * s
+            h = 112 + 11 * s
+            w = 122 - 9 * s
             yOff = -7 * abs(sin(PI * t * 2))
         }
         3 -> { // 扁塌 + 发抖 + 暗淡配色
-            top = BODY_TOP_DIM; bot = BODY_BOT_DIM; rim = RIM_DIM; blush = false
-            w = 130.0; h = 94.0
+            top = BODY_TOP_DIM
+            bot = BODY_BOT_DIM
+            rim = RIM_DIM
+            blush = false
+            w = 130.0
+            h = 94.0
             leanX = if (col % 2 == 0) -2.2 else 2.2
             yOff = 1.0
         }
@@ -118,8 +124,15 @@ private fun drawFrame(g: Graphics2D, col: Int, row: Int) {
         }
         5 -> { // 弹跳 + 大笑 + 闪光
             val jp = col.toDouble() / (COLS - 1) // 0..1
-            if (jp < 0.13 || jp > 0.87) { h = 100.0; w = 130.0; yOff = 2.0 }      // 蓄力/落地 squash
-            else { h = 122.0; w = 108.0; yOff = -44 * sin(PI * jp) }              // 腾空 stretch
+            if (jp < 0.13 || jp > 0.87) {
+                h = 100.0
+                w = 130.0
+                yOff = 2.0
+            } else {
+                h = 122.0
+                w = 108.0
+                yOff = -44 * sin(PI * jp)
+            }
         }
     }
 
@@ -151,18 +164,25 @@ private fun drawFrame(g: Graphics2D, col: Int, row: Int) {
 
     when (kind) {
         0 -> {
-            if (col == 4) { blinkEyes(g, lx, eyeY); blinkEyes(g, rx, eyeY) }
-            else { eye(g, lx, eyeY, 0.0, 0.0); eye(g, rx, eyeY, 0.0, 0.0) }
+            if (col == 4) {
+                blinkEyes(g, lx, eyeY)
+                blinkEyes(g, rx, eyeY)
+            } else {
+                eye(g, lx, eyeY, 0.0, 0.0)
+                eye(g, rx, eyeY, 0.0, 0.0)
+            }
             smile(g, exC, my, 11.0)
         }
         1 -> {
             val look = sin(tau) * 3.2
-            eye(g, lx, eyeY, look, 0.0); eye(g, rx, eyeY, look, 0.0)
+            eye(g, lx, eyeY, look, 0.0)
+            eye(g, rx, eyeY, look, 0.0)
             mouthO(g, exC, my, 5.0)
             val hy = by - h * 0.42 + sin(tau * 2) * 6
             g.color = Color(top.red, top.green, top.blue, 235)
             g.fill(Ellipse2D.Double(exC + w * 0.50, hy, 22.0, 20.0))
-            g.color = rim; g.stroke = BasicStroke(2f)
+            g.color = rim
+            g.stroke = BasicStroke(2f)
             g.draw(Ellipse2D.Double(exC + w * 0.50, hy, 22.0, 20.0))
             val ba = (120 + 135 * (0.5 + 0.5 * sin(tau))).toInt()
             bang(g, exC + w * 0.42, by - h - 14, ba)
@@ -176,20 +196,24 @@ private fun drawFrame(g: Graphics2D, col: Int, row: Int) {
             motionLines(g, cx - w * 0.62, by - h * 0.5, col)
         }
         3 -> {
-            deadEyes(g, lx, eyeY); deadEyes(g, rx, eyeY)
-            sadBrow(g, lx, eyeY - 11); sadBrow(g, rx, eyeY - 11)
+            deadEyes(g, lx, eyeY)
+            deadEyes(g, rx, eyeY)
+            sadBrow(g, lx, eyeY - 11)
+            sadBrow(g, rx, eyeY - 11)
             sad(g, exC, my + 2, 10.0)
             val sy = by - h * 0.55 + (col.toDouble() / COLS) * 26
             sweat(g, exC + w * 0.40, sy)
         }
         4 -> {
-            eye(g, lx, eyeY, 0.0, -3.0); eye(g, rx, eyeY, 0.0, -3.0)
+            eye(g, lx, eyeY, 0.0, -3.0)
+            eye(g, rx, eyeY, 0.0, -3.0)
             mouthFlat(g, exC, my, 7.0)
             val active = (t * 3).toInt() % 3
             thinkDots(g, exC, by - h - 16, active)
         }
         5 -> {
-            happyEyes(g, lx, eyeY); happyEyes(g, rx, eyeY)
+            happyEyes(g, lx, eyeY)
+            happyEyes(g, rx, eyeY)
             openSmile(g, exC, my, 16.0, 12.0)
             if (yOff < -6) {
                 fillStar(g, exC - w * 0.66, by - h * 0.7, 7.0, SPARK)

@@ -140,7 +140,10 @@ class PetGridView(
 
     private fun select(cell: Cell?) {
         if (cell === selectedCell) return
-        selectedCell?.let { it.active = false; it.repaint() }
+        selectedCell?.let {
+            it.active = false
+            it.repaint()
+        }
         selectedCell = cell
         cell?.let {
             it.active = true
@@ -175,7 +178,10 @@ class PetGridView(
         if (cell.thumb != null || cell.failed) return
         if (cell.job?.isActive == true) return
         val id = cell.item.id
-        PetThumbnails.cached(id)?.let { cell.thumb = it; return }
+        PetThumbnails.cached(id)?.let {
+            cell.thumb = it
+            return
+        }
         val gen = generation
         cell.job = scope.launch {
             val currentJob = coroutineContext[Job]

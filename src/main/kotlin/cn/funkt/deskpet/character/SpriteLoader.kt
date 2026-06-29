@@ -35,7 +35,9 @@ object SpriteLoader {
     /** 解析为精灵图；任何失败都回退到内置形象，保证宠物始终有图可画 */
     fun load(c: PetCharacter): SpriteSheet {
         if (c.isBuiltin) return PetSprite.builtin
-        cache[c.id]?.let { return it }
+        cache[c.id]?.let {
+            return it
+        }
         val sheet = readFile(c.filePath)?.let { SpriteSheet(it) }
         if (sheet != null) {
             cache[c.id] = sheet

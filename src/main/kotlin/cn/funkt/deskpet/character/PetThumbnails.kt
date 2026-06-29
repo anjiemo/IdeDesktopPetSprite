@@ -48,8 +48,13 @@ object PetThumbnails {
 
     /** 从精灵图文件取缩略图（内存 → 磁盘 → 区域解码）；失败返回 null。需在后台线程调用。 */
     fun fromFile(id: String, file: File): BufferedImage? {
-        mem[id]?.let { return it }
-        diskRead(id)?.let { mem[id] = it; return it }
+        mem[id]?.let {
+            return it
+        }
+        diskRead(id)?.let {
+            mem[id] = it
+            return it
+        }
         val img = decodeIdleThumb(file) ?: return null
         mem[id] = img
         runCatching { diskWrite(id, img) }
@@ -58,7 +63,9 @@ object PetThumbnails {
 
     /** 从已在内存的整张精灵图取缩略图（内置形象用，无需读盘） */
     fun fromSheet(id: String, sheet: SpriteSheet): BufferedImage {
-        mem[id]?.let { return it }
+        mem[id]?.let {
+            return it
+        }
         val row = PetState.IDLE.row.coerceIn(0, sheet.rows - 1)
         val img = scaleDown(sheet.frame(0, row))
         mem[id] = img

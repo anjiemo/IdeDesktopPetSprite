@@ -80,8 +80,15 @@ class CharacterPickerDialog(
     private val petdexKind = ComboBox<String>()
     private val petdexStatus = JBLabel(" ")
     private val petdexGrid = PetGridView(
-        onSelect = { item -> petdexSelected = item?.character; onSelectionChanged() },
-        onActivate = { item -> petdexSelected = item.character; onSelectionChanged(); doOKAction() },
+        onSelect = { item ->
+            petdexSelected = item?.character
+            onSelectionChanged()
+        },
+        onActivate = { item ->
+            petdexSelected = item.character
+            onSelectionChanged()
+            doOKAction()
+        },
     )
     private var petdexAllPets: List<PetdexClient.Pet> = emptyList()
     private var petdexLoaded = false
@@ -96,8 +103,16 @@ class CharacterPickerDialog(
 
     // 已添加 / 内置
     private val libraryGrid = PetGridView(
-        onSelect = { item -> librarySelected = item?.character; updateRemoveBtn(); onSelectionChanged() },
-        onActivate = { item -> librarySelected = item.character; onSelectionChanged(); doOKAction() },
+        onSelect = { item ->
+            librarySelected = item?.character
+            updateRemoveBtn()
+            onSelectionChanged()
+        },
+        onActivate = { item ->
+            librarySelected = item.character
+            onSelectionChanged()
+            doOKAction()
+        },
     )
     private val libraryRemoveBtn = JButton("从库中删除")
 

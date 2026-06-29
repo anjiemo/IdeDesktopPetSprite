@@ -109,10 +109,15 @@ class CharacterPickerDialog(
 
     // 已添加 / 内置
     private val libraryGrid = PetGridView(
+        multiSelect = true,
         onSelect = { item ->
             librarySelected = item?.character
             updateRemoveBtn()
             onSelectionChanged()
+        },
+        onMultiSelect = { items ->
+            libraryMultiSelected = items.filter { !it.character.isBuiltin }
+            updateRemoveBtn()
         },
         onActivate = { item ->
             librarySelected = item.character
@@ -121,6 +126,7 @@ class CharacterPickerDialog(
         },
     )
     private val libraryRemoveBtn = JButton("从库中删除")
+    private var libraryMultiSelected: List<PetGridView.Item> = emptyList()
 
     init {
         title = "选择形象"
@@ -366,7 +372,14 @@ class CharacterPickerDialog(
 
     private fun buildLibraryPanel(): JComponent {
         libraryRemoveBtn.addActionListener { removeSelectedLibrary() }
-        val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply { add(libraryRemoveBtn) }
+        val hint = com.intellij.ui.components.JBLabel("支持 Ctrl / Shift 多选").apply {
+            font = com.intellij.util.ui.JBFont.small()
+            foreground = com.intellij.ui.JBColor.GRAY
+        }
+        val buttons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+            add(libraryRemoveBtn)
+            add(hint)
+        }
         return JPanel(BorderLayout(0, 6)).apply {
             border = JBUI.Borders.empty(8)
             add(libraryGrid.component, BorderLayout.CENTER)
@@ -397,16 +410,37 @@ class CharacterPickerDialog(
     }
 
     private fun updateRemoveBtn() {
-        libraryRemoveBtn.isEnabled = librarySelected != null && librarySelected?.isBuiltin == false
+        val removable = libraryMultiSelected
+        libraryRemoveBtn.isEnabled = removable.isNotEmpty()
+        libraryRemoveBtn.text = if (removable.size > 1) "删除所选 ${removable.size} 个" else "从库中删除"
     }
 
     private fun removeSelectedLibrary() {
-        val c = librarySelected ?: return
-        if (c.isBuiltin) return
-        store.remove(c.id)
-        SpriteLoader.invalidate(c.id)
-        PetThumbnails.invalidate(c.id)
-        previewCache.remove(c.id)
+        val targets = libraryMultiSelected.takeIf { it.isNotEmpty() } ?: return
+        val names = targets.joinToString("、") { it.character.displayName }
+        val msg = if (targets.size == 1) {
+            "确定要删除「${targets[0].character.displayName}」吗？删除后无法恢复。"
+        } else {
+            "确定要删除以下 ${targets.size} 个形象吗？删除后无法恢复。\n\n$names"
+        }
+        val confirm = com.intellij.openapi.ui.Messages.showYesNoDialog(
+            project,
+            msg,
+            "确认删除",
+            "删除",
+            "取消",
+            com.intellij.openapi.ui.Messages.getWarningIcon()
+        )
+        if (confirm != com.intellij.openapi.ui.Messages.YES) return
+
+        for (item in targets) {
+            val id = item.character.id
+            store.remove(id)
+            SpriteLoader.invalidate(id)
+            PetThumbnails.invalidate(id)
+            previewCache.remove(id)
+        }
+        libraryMultiSelected = emptyList()
         librarySelected = null
         reloadLibrary()
         refreshSelection()

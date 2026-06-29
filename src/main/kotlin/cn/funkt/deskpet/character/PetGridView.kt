@@ -62,7 +62,9 @@ import kotlinx.coroutines.sync.withPermit
  */
 class PetGridView(
     private val columns: Int = 5,
+    private val multiSelect: Boolean = false,
     private val onSelect: (Item?) -> Unit,
+    private val onMultiSelect: (List<Item>) -> Unit = {},
     private val onActivate: (Item) -> Unit,
 ) {
 
@@ -98,7 +100,11 @@ class PetGridView(
 
     private var cells: List<Cell> = emptyList()
     private var selectedCell: Cell? = null
+    private val selectedCells: LinkedHashSet<Cell> = linkedSetOf()
     private var generation = 0
+
+    /** 当前选中的所有 Item（仅多选模式下有效） */
+    val selectedItems: List<Item> get() = selectedCells.map { it.item }
 
     // 滚动防抖：连续滚动时不反复入队，停下后再统一加载可视区域
     private val debounce = Timer(120) { loadVisible() }.apply { isRepeats = false }
@@ -118,8 +124,9 @@ class PetGridView(
 
     fun setItems(items: List<Item>, resetScroll: Boolean = true) {
         generation++
-        scope.coroutineContext.cancelChildren() // 取消该网格之前所有正在进行的异步加载任务
+        scope.coroutineContext.cancelChildren()
         selectedCell = null
+        selectedCells.clear()
         allItems = items
         displayedCount = if (resetScroll) 120 else displayedCount.coerceAtLeast(120)
 
@@ -136,10 +143,15 @@ class PetGridView(
     }
 
     fun selectById(id: String) {
-        select(cells.firstOrNull { it.item.id == id })
+        select(cells.firstOrNull { it.item.id == id }, toggleOrRange = false)
     }
 
-    fun clearSelection() = select(null)
+    fun clearSelection() {
+        selectedCells.toList().forEach { setActive(it, false) }
+        selectedCells.clear()
+        selectedCell = null
+        select(null, toggleOrRange = false)
+    }
 
     val selected: Item? get() = selectedCell?.item
 
@@ -150,20 +162,57 @@ class PetGridView(
 
     // ---------------- 内部 ----------------
 
-    private fun select(cell: Cell?) {
-        if (cell === selectedCell) return
-        selectedCell?.let {
-            it.active = false
-            it.repaint()
+    private fun select(cell: Cell?, toggleOrRange: Boolean = false, rangeAnchor: Cell? = null) {
+        if (!multiSelect || !toggleOrRange) {
+            // 单选模式，或没有修饰键：清空之前所有选中
+            selectedCells.toList().forEach { setActive(it, false) }
+            selectedCells.clear()
         }
-        selectedCell = cell
-        cell?.let {
-            it.active = true
-            it.repaint()
+
+        if (cell == null) {
+            selectedCell = null
+            onSelect(null)
+            if (multiSelect) onMultiSelect(emptyList())
+            return
+        }
+
+        if (multiSelect && toggleOrRange && rangeAnchor != null) {
+            // Shift 点击：从锚点到当前格子范围全选
+            val anchorIdx = cells.indexOf(rangeAnchor)
+            val cellIdx = cells.indexOf(cell)
+            val range = if (anchorIdx <= cellIdx) cells.subList(anchorIdx, cellIdx + 1)
+            else cells.subList(cellIdx, anchorIdx + 1)
+            range.forEach {
+                setActive(it, true)
+                selectedCells.add(it)
+            }
+        } else if (multiSelect && toggleOrRange) {
+            // Ctrl 点击：切换单个格子
+            if (selectedCells.contains(cell)) {
+                setActive(cell, false)
+                selectedCells.remove(cell)
+            } else {
+                setActive(cell, true)
+                selectedCells.add(cell)
+            }
+        } else {
+            // 普通点击（单选或多选模式无修饰键）
+            setActive(cell, true)
+            selectedCells.add(cell)
+        }
+
+        selectedCell = selectedCells.lastOrNull() ?: cell
+        selectedCell?.let {
             it.scrollRectToVisible(Rectangle(0, 0, it.width, it.height))
             ensureLoaded(it)
         }
-        onSelect(cell?.item)
+        onSelect(selectedCell?.item)
+        if (multiSelect) onMultiSelect(selectedItems)
+    }
+
+    private fun setActive(cell: Cell, active: Boolean) {
+        cell.active = active
+        cell.repaint()
     }
 
     private fun loadVisible() {
@@ -318,7 +367,20 @@ class PetGridView(
                 if (item.subtitle.isNotBlank()) append(" · ").append(item.subtitle)
             }
             val mouse = object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) = select(this@Cell)
+                override fun mousePressed(e: MouseEvent) {
+                    if (multiSelect) {
+                        val isCtrl = e.isControlDown || e.isMetaDown
+                        val isShift = e.isShiftDown
+                        when {
+                            isShift -> select(this@Cell, toggleOrRange = true, rangeAnchor = selectedCell ?: this@Cell)
+                            isCtrl -> select(this@Cell, toggleOrRange = true)
+                            else -> select(this@Cell, toggleOrRange = false)
+                        }
+                    } else {
+                        select(this@Cell, toggleOrRange = false)
+                    }
+                }
+
                 override fun mouseClicked(e: MouseEvent) {
                     if (e.clickCount == 2) onActivate(item)
                 }

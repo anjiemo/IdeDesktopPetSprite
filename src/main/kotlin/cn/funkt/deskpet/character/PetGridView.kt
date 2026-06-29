@@ -38,8 +38,6 @@ import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadFactory
 import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -48,6 +46,7 @@ import javax.swing.Scrollable
 import javax.swing.SwingConstants
 import javax.swing.Timer
 import kotlin.math.min
+import kotlinx.coroutines.*
 
 /**
  * 形象网格（复刻 Vibe Pet 选择器）：多列网格缩略图，按视口懒加载、并发预取，
@@ -90,10 +89,7 @@ class PetGridView(
 
     val component: JComponent get() = scroll
 
-    // 限制并发，避免一次性大量下载 / 解码把 CPU、网络打满
-    private val pool = Executors.newFixedThreadPool(4, ThreadFactory { r ->
-        Thread(r, "deskpet-grid-loader").apply { isDaemon = true }
-    })
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val loading: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
 
     private var cells: List<Cell> = emptyList()
@@ -133,7 +129,7 @@ class PetGridView(
 
     fun dispose() {
         debounce.stop()
-        pool.shutdownNow()
+        scope.cancel()
     }
 
     // ---------------- 内部 ----------------
@@ -157,23 +153,50 @@ class PetGridView(
         // 仅加载可视区域，外加上下各半屏预取，滚动更顺滑而不浪费
         val expanded = Rectangle(view.x, view.y - view.height / 2, view.width, view.height * 2)
         for (cell in cells) {
-            if (cell.bounds.intersects(expanded)) ensureLoaded(cell)
+            val inViewport = cell.bounds.intersects(expanded)
+            if (inViewport) {
+                ensureLoaded(cell)
+            } else {
+                // 如果已经有协程在运行，但在视口之外，则取消加载
+                cell.job?.let {
+                    if (it.isActive) {
+                        it.cancel()
+                    }
+                }
+            }
         }
     }
 
     private fun ensureLoaded(cell: Cell) {
         if (cell.thumb != null || cell.failed) return
+        if (cell.job?.isActive == true) return
         val id = cell.item.id
         PetThumbnails.cached(id)?.let { cell.thumb = it; return }
         if (!loading.add(id)) return
         val gen = generation
-        pool.submit {
-            val img = runCatching { cell.item.loadThumb() }.getOrNull()
-            ApplicationManager.getApplication().invokeLater({
-                loading.remove(id)
-                if (gen != generation) return@invokeLater
-                if (img != null) cell.thumb = img else cell.markFailed()
-            }, ModalityState.any())
+        cell.job = scope.launch {
+            var img: BufferedImage? = null
+            try {
+                img = withContext(Dispatchers.IO) {
+                    cell.item.loadThumb()
+                }
+                ApplicationManager.getApplication().invokeLater({
+                    if (gen == generation) {
+                        if (img != null) cell.thumb = img else cell.markFailed()
+                    }
+                }, ModalityState.any())
+            } catch (e: CancellationException) {
+                // 协程被取消，静默退出
+            } catch (e: Exception) {
+                ApplicationManager.getApplication().invokeLater({
+                    if (gen == generation) cell.markFailed()
+                }, ModalityState.any())
+            } finally {
+                ApplicationManager.getApplication().invokeLater({
+                    loading.remove(id)
+                    cell.job = null
+                }, ModalityState.any())
+            }
         }
     }
 
@@ -192,6 +215,7 @@ class PetGridView(
             }
 
         var failed = false
+        var job: Job? = null
 
         private val thumbView = object : JComponent() {
             override fun paintComponent(g: Graphics) {

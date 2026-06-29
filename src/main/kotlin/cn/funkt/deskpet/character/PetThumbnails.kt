@@ -70,6 +70,10 @@ object PetThumbnails {
         runCatching { diskFile(id).delete() }
     }
 
+    fun clearCache() {
+        mem.clear()
+    }
+
     // ---- 解码 ----
 
     private fun decodeIdleThumb(file: File): BufferedImage? =

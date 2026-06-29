@@ -381,15 +381,19 @@ class CharacterPickerDialog(
         }
     }
 
-    /** 解码整张精灵图（Petdex 缺文件时按需下载）；不写入全局缓存，仅供本对话框预览。失败回退内置 */
-    private fun loadFullSheet(c: PetCharacter): SpriteSheet {
+    /** 解码整张精灵图（Petdex 缺文件时按需下载）；不写入全局缓存，仅供本对话框预览。失败返回 null */
+    private fun loadFullSheet(c: PetCharacter): SpriteSheet? {
         if (c.isBuiltin) return PetSprite.builtin
-        petByCharId[c.id]?.let { pet -> return readSheet(PetdexClient.download(pet)) }
-        return c.filePath?.let { readSheet(File(it)) } ?: PetSprite.builtin
+        val pet = petByCharId[c.id]
+        if (pet != null) {
+            val file = runCatching { PetdexClient.download(pet) }.getOrNull() ?: return null
+            return readSheet(file)
+        }
+        return c.filePath?.let { readSheet(File(it)) }
     }
 
-    private fun readSheet(file: File): SpriteSheet =
-        SpriteLoader.readImage(file)?.let { SpriteSheet(it) } ?: PetSprite.builtin
+    private fun readSheet(file: File): SpriteSheet? =
+        SpriteLoader.readImage(file)?.let { SpriteSheet(it) }
 
     private fun activeSelection(): PetCharacter? = when (tabs.selectedIndex) {
         0 -> petdexSelected

@@ -67,6 +67,11 @@ object SpriteLoader {
         cache.remove(id)
     }
 
+    fun clearCache() {
+        cache.clear()
+        runCatching { cacheDir().deleteRecursively() }
+    }
+
     /** 形象精灵图缓存目录（Petdex 下载 / 本地导入副本都放这里） */
     fun cacheDir(): File = File(PathManager.getSystemPath(), "ideDeskPet/pets").apply { mkdirs() }
 

@@ -20,6 +20,7 @@ import cn.funkt.deskpet.character.CharacterPickerDialog
 import cn.funkt.deskpet.character.PetCharacterStore
 import cn.funkt.deskpet.character.SpriteLoader
 import cn.funkt.deskpet.character.SpritePreviewComponent
+import cn.funkt.deskpet.character.PetThumbnails
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
@@ -60,6 +61,7 @@ class DeskPetConfigurable : Configurable {
     private val projectPreview = SpritePreviewComponent(Dimension(72, 78))
     private val setProjectCharBtn = JButton("为所选项目设置形象…")
     private val followDefaultBtn = JButton("跟随默认形象")
+    private val clearCacheBtn = JButton("清除下载及缩略图缓存")
 
     /** item = 项目 key；勾选 = 显示（未被永久关闭） */
     private val projectList = CheckBoxList<String>()
@@ -98,6 +100,20 @@ class DeskPetConfigurable : Configurable {
         // 所选项目的形象（预览 + 设置 / 跟随默认）
         setProjectCharBtn.addActionListener { setProjectCharacter() }
         followDefaultBtn.addActionListener { followDefault() }
+        clearCacheBtn.addActionListener {
+            val result = com.intellij.openapi.ui.Messages.showYesNoDialog(
+                "确定要清除所有已下载的形象和缩略图缓存吗？这会删除本地所有已下载的在线形象，并在需要时重新下载。",
+                "清除缓存",
+                "清除",
+                "取消",
+                com.intellij.openapi.ui.Messages.getQuestionIcon()
+            )
+            if (result == com.intellij.openapi.ui.Messages.YES) {
+                SpriteLoader.clearCache()
+                PetThumbnails.clearCache()
+                com.intellij.openapi.ui.Messages.showInfoMessage("缓存已清除完成！", "提示")
+            }
+        }
         val pcButtons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
             isOpaque = false
             add(setProjectCharBtn); add(followDefaultBtn)
@@ -118,6 +134,7 @@ class DeskPetConfigurable : Configurable {
             row("默认尺寸：") { cell(sizeCombo) }
             row("默认形象：") { cell(defaultCharPanel) }
             row("响应状态：") { cell(states) }
+            row("缓存管理：") { cell(clearCacheBtn) }
             row { label("按项目显示（勾选 = 显示该项目的宠物；取消 = 永久关闭）") }
             row { cell(listPanel).align(AlignX.FILL) }
             row { label("所选项目的形象（在上方列表中选中某项目后查看 / 设置）") }

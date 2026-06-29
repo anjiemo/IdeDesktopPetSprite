@@ -113,6 +113,9 @@ class PetGridView(
     private var allItems: List<Item> = emptyList()
     private var displayedCount = 120
 
+    /** setItems 用的专属令牌，保证快速多次触发时只有最后一次的结果生效 */
+    private var setItemsToken = 0
+
     fun setItems(items: List<Item>, resetScroll: Boolean = true) {
         generation++
         scope.coroutineContext.cancelChildren() // 取消该网格之前所有正在进行的异步加载任务

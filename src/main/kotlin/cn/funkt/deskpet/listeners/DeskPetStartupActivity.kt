@@ -36,6 +36,11 @@ import com.intellij.task.ProjectTaskManager
 class DeskPetStartupActivity : ProjectActivity {
 
     override suspend fun execute(project: Project) {
+        // 项目启动时在后台子线程预先读取解析本地 Petdex 缓存清单并载入内存，以实现后续弹窗瞬开且不白屏
+        com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread {
+            cn.funkt.deskpet.character.PetdexClient.cachedManifest()
+        }
+
         val controller = project.service<PetController>()
         controller.start()
 

@@ -40,6 +40,7 @@ import javax.swing.DefaultComboBoxModel
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.Timer
 import javax.swing.event.DocumentEvent
 
 /**
@@ -94,6 +95,10 @@ class CharacterPickerDialog(
     private var petdexAllPets: List<PetdexClient.Pet> = emptyList()
     private var petdexLoaded = false
     private var petdexToken = 0
+    private var filterToken = 0
+
+    // 搜索防抖：停止输入后 120ms 才触发后台过滤，避免每个按键都大量创建 JPanel 组件
+    private val filterTimer = Timer(120) { doFilter(resetScroll = true) }.apply { isRepeats = false }
 
     // 本地
     private val localNameField = JBTextField()
@@ -122,7 +127,7 @@ class CharacterPickerDialog(
         setOKButtonText("使用此形象")
         init()
         reloadLibrary()
-        loadPetdex(force = false)
+        // 不在此处调用 loadPetdex，待 createCenterPanel 完成后再触发，确保 Tab UI 先行渲染
         refreshSelection()
     }
 
@@ -135,6 +140,8 @@ class CharacterPickerDialog(
             if (tabs.selectedIndex == 0 && !petdexLoaded) loadPetdex(force = false)
             refreshSelection()
         }
+        // 面板渲染完毕后再触发加载，确保 Tab UI 已经可见，不让 Petdex 数据加载阻塞弹窗展示
+        ApplicationManager.getApplication().invokeLater({ loadPetdex(force = false) }, ModalityState.any())
 
         val right = JPanel(BorderLayout()).apply {
             preferredSize = JBUI.size(190, 480)
@@ -155,11 +162,14 @@ class CharacterPickerDialog(
 
     private fun buildPetdexPanel(): JComponent {
         petdexSearch.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(e: DocumentEvent) = refilterPetdex()
+            override fun textChanged(e: DocumentEvent) {
+                // 防抖：每次输入都重置计时器，停止输入 120ms 后才执行过滤
+                filterTimer.restart()
+            }
         })
         petdexKind.model = DefaultComboBoxModel(arrayOf(ALL_KINDS))
         petdexKind.preferredSize = Dimension(150, petdexKind.preferredSize.height)
-        petdexKind.addActionListener { refilterPetdex() }
+        petdexKind.addActionListener { refilterPetdex(resetScroll = true) }
 
         val refreshBtn = JButton("刷新").apply { addActionListener { loadPetdex(force = true) } }
         val east = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
@@ -226,20 +236,34 @@ class CharacterPickerDialog(
     }
 
     private fun refilterPetdex(resetScroll: Boolean = true) {
+        filterTimer.stop()
+        doFilter(resetScroll)
+    }
+
+    private fun doFilter(resetScroll: Boolean) {
         val q = petdexSearch.text.trim().lowercase()
         val kind = (petdexKind.selectedItem as? String)?.takeIf { it != ALL_KINDS }.orEmpty()
-        val filtered = petdexAllPets.filter { pet ->
-            (kind.isEmpty() || pet.kind == kind) &&
-                (q.isEmpty() || "${pet.displayName} ${pet.slug} ${pet.kind} ${pet.submittedBy}".lowercase().contains(q))
+        val allPets = petdexAllPets
+        val token = ++filterToken
+        // 过滤和 toGridItem 转换放入后台线程，不阻塞 EDT；Cell 的创建仍在 EDT（Swing 线程安全）
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val filtered = allPets.filter { pet ->
+                (kind.isEmpty() || pet.kind == kind) &&
+                    (q.isEmpty() || pet.searchIndex.contains(q))
+            }
+            val items = filtered.map { it.toGridItem() }
+            filtered.forEach { petByCharId["petdex:${it.slug}"] = it }
+            ApplicationManager.getApplication().invokeLater({
+                if (token != filterToken) return@invokeLater
+                petdexGrid.setItems(items, resetScroll)
+                petdexStatus.text = when {
+                    allPets.isEmpty() -> "暂无可用形象"
+                    filtered.isEmpty() -> "没有匹配的形象"
+                    else -> "共 ${filtered.size} 个形象 · 来源 petdex.dev"
+                }
+                petdexSelected?.let { petdexGrid.selectById(it.id) }
+            }, ModalityState.any())
         }
-        filtered.forEach { petByCharId["petdex:${it.slug}"] = it }
-        petdexGrid.setItems(filtered.map { it.toGridItem() }, resetScroll)
-        petdexStatus.text = when {
-            petdexAllPets.isEmpty() -> "暂无可用形象"
-            filtered.isEmpty() -> "没有匹配的形象"
-            else -> "共 ${filtered.size} 个形象 · 来源 petdex.dev"
-        }
-        petdexSelected?.let { petdexGrid.selectById(it.id) }
     }
 
     private fun PetdexClient.Pet.toGridItem(): PetGridView.Item {

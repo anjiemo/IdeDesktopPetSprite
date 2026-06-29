@@ -51,7 +51,11 @@ object PetdexClient {
         val spritesheetUrl: String,
         val petJsonUrl: String,
         val zipUrl: String,
+        val searchIndex: String = ""
     )
+
+    @Volatile
+    private var inMemoryManifest: List<Pet>? = null
 
     /** 拉取并解析清单（网络调用，需在后台线程执行）；成功后落盘缓存，供下次秒开 */
     fun fetchManifest(indicator: ProgressIndicator? = null): List<Pet> {
@@ -61,16 +65,22 @@ object PetdexClient {
             .readTimeout(CONNECT_TIMEOUT)
             .readString(indicator)
         val pets = parseManifest(text)
+        inMemoryManifest = pets
+        activeDownloads.clear() // 重置活跃下载状态
         runCatching { manifestFile().writeText(text) }
         return pets
     }
 
     /** 读取上次落盘的清单缓存（无网络，瞬时）；没有或损坏返回 null */
     fun cachedManifest(): List<Pet>? {
+        val mem = inMemoryManifest
+        if (mem != null) return mem
         val f = manifestFile()
         if (!f.isFile) return null
         val text = runCatching { f.readText() }.getOrNull() ?: return null
-        return runCatching { parseManifest(text) }.getOrNull()?.takeIf { it.isNotEmpty() }
+        val parsed = runCatching { parseManifest(text) }.getOrNull()?.takeIf { it.isNotEmpty() }
+        inMemoryManifest = parsed
+        return parsed
     }
 
     private fun parseManifest(text: String): List<Pet> {
@@ -86,14 +96,17 @@ object PetdexClient {
         val display = o.str("displayName").ifBlank { o.str("name") }.ifBlank { slug }
         val sprite = o.str("spritesheetUrl").ifBlank { o.str("spriteUrl") }
         if (slug.isBlank() || display.isBlank() || !isAllowed(sprite)) return null
+        val kind = o.str("kind")
+        val submittedBy = o.str("submittedBy")
         return Pet(
             slug = slug,
             displayName = display,
-            kind = o.str("kind"),
-            submittedBy = o.str("submittedBy"),
+            kind = kind,
+            submittedBy = submittedBy,
             spritesheetUrl = sprite,
             petJsonUrl = o.str("petJsonUrl").takeIf { isAllowed(it) } ?: "",
             zipUrl = o.str("zipUrl").takeIf { isAllowed(it) } ?: "",
+            searchIndex = "$display $slug $kind $submittedBy".lowercase()
         )
     }
 

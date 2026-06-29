@@ -93,8 +93,19 @@ object PetThumbnails {
                 val rect = Rectangle(0, rowY, min(SpriteSheet.FRAME_W, w), min(SpriteSheet.FRAME_H, h - rowY))
                 val param: ImageReadParam = reader.defaultReadParam
                 param.sourceRegion = rect
-                if (SAMPLE > 1) param.setSourceSubsampling(SAMPLE, SAMPLE, 0, 0)
-                return reader.read(0, param)
+                
+                val img = reader.read(0, param) ?: return null
+                
+                // 如果 ImageReader 忽略了 sourceRegion（例如某些 WebP 解码器），则在此处手动裁剪
+                val cropped = if (img.width > rect.width || img.height > rect.height) {
+                    val cx = if (img.width == w) rect.x else 0
+                    val cy = if (img.height == h) rect.y else 0
+                    img.getSubimage(cx, cy, min(rect.width, img.width - cx), min(rect.height, img.height - cy))
+                } else {
+                    img
+                }
+                
+                return scaleDown(cropped)
             } finally {
                 reader.dispose()
             }
@@ -131,7 +142,14 @@ object PetThumbnails {
     private fun diskRead(id: String): BufferedImage? {
         val f = diskFile(id)
         if (!f.isFile) return null
-        return runCatching { ImageIO.read(f) }.getOrNull()
+        val img = runCatching { ImageIO.read(f) }.getOrNull() ?: return null
+        // 自愈机制：如果缓存图片尺寸大于目标缩略图尺寸（96x104），
+        // 说明这是旧的或损坏的缓存（例如整张精灵图）。删除并强制重新生成。
+        if (img.width > 96 || img.height > 104) {
+            runCatching { f.delete() }
+            return null
+        }
+        return img
     }
 
     private fun diskWrite(id: String, img: BufferedImage) {

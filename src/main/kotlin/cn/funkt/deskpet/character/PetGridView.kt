@@ -162,7 +162,7 @@ class PetGridView(
     }
 
     private fun ensureLoaded(cell: Cell) {
-        if (cell.thumb != null) return
+        if (cell.thumb != null || cell.failed) return
         val id = cell.item.id
         PetThumbnails.cached(id)?.let { cell.thumb = it; return }
         if (!loading.add(id)) return
@@ -191,7 +191,7 @@ class PetGridView(
                 border = if (value) ACTIVE_BORDER else IDLE_BORDER
             }
 
-        private var failed = false
+        var failed = false
 
         private val thumbView = object : JComponent() {
             override fun paintComponent(g: Graphics) {

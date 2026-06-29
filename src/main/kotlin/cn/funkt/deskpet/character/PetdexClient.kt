@@ -38,8 +38,8 @@ object PetdexClient {
     const val MANIFEST_URL = "https://petdex.dev/api/manifest"
     const val SOURCE_HOME = "https://petdex.dev"
     private const val ASSET_HOST = "assets.petdex.dev"
-    private const val CONNECT_TIMEOUT = 10_000
-    private const val READ_TIMEOUT = 60_000
+    private const val CONNECT_TIMEOUT = 5_000
+    private const val READ_TIMEOUT = 15_000
 
     data class Pet(
         val slug: String,
@@ -104,10 +104,15 @@ object PetdexClient {
         require(isAllowed(pet.spritesheetUrl)) { "非法的形象地址：${pet.spritesheetUrl}" }
         val file = cacheFileFor(pet)
         if (file.isFile && file.length() > 0) return file
-        HttpRequests.request(pet.spritesheetUrl)
-            .connectTimeout(CONNECT_TIMEOUT)
-            .readTimeout(READ_TIMEOUT)
-            .saveToFile(file, indicator)
+        try {
+            HttpRequests.request(pet.spritesheetUrl)
+                .connectTimeout(CONNECT_TIMEOUT)
+                .readTimeout(READ_TIMEOUT)
+                .saveToFile(file, indicator)
+        } catch (e: Throwable) {
+            runCatching { file.delete() }
+            throw e
+        }
         return file
     }
 

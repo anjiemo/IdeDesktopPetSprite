@@ -47,6 +47,8 @@ import javax.swing.SwingConstants
 import javax.swing.Timer
 import kotlin.math.min
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 /**
  * 形象网格（复刻 Vibe Pet 选择器）：多列网格缩略图，按视口懒加载、并发预取，
@@ -90,6 +92,7 @@ class PetGridView(
     val component: JComponent get() = scroll
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val semaphore = Semaphore(8)
 
     private var cells: List<Cell> = emptyList()
     private var selectedCell: Cell? = null
@@ -178,12 +181,21 @@ class PetGridView(
             val currentJob = coroutineContext[Job]
             var img: BufferedImage? = null
             try {
-                img = withContext(Dispatchers.IO) {
-                    cell.item.loadThumb()
+                img = semaphore.withPermit {
+                    withContext(Dispatchers.IO) {
+                        cell.item.loadThumb()
+                    }
                 }
                 ApplicationManager.getApplication().invokeLater({
                     if (gen == generation) {
-                        if (img != null) cell.thumb = img else cell.markFailed()
+                        if (img != null) {
+                            cell.thumb = img
+                            if (cell === selectedCell) {
+                                onSelect(cell.item)
+                            }
+                        } else {
+                            cell.markFailed()
+                        }
                     }
                 }, ModalityState.any())
             } catch (e: CancellationException) {

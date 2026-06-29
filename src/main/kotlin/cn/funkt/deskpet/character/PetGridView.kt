@@ -110,11 +110,18 @@ class PetGridView(
         })
     }
 
+    private var allItems: List<Item> = emptyList()
+    private var displayedCount = 120
+
     fun setItems(items: List<Item>, resetScroll: Boolean = true) {
         generation++
         scope.coroutineContext.cancelChildren() // 取消该网格之前所有正在进行的异步加载任务
         selectedCell = null
-        cells = items.map { Cell(it) }
+        allItems = items
+        displayedCount = if (resetScroll) 120 else displayedCount.coerceAtLeast(120)
+
+        val toDisplay = allItems.take(displayedCount)
+        cells = toDisplay.map { Cell(it) }
         grid.removeAll()
         cells.forEach { grid.add(it) }
         grid.revalidate()
@@ -158,6 +165,22 @@ class PetGridView(
 
     private fun loadVisible() {
         if (cells.isEmpty() || grid.width == 0) return
+
+        // 检查是否滚动接近底部，如果是，且还有未展示的项，则追加展示更多单元格
+        val scrollBar = scroll.verticalScrollBar
+        if (displayedCount < allItems.size && scrollBar.value + scrollBar.visibleAmount >= scrollBar.maximum - 400) {
+            displayedCount = min(allItems.size, displayedCount + 60)
+            val toDisplay = allItems.take(displayedCount)
+            val currentSize = cells.size
+            val newItems = toDisplay.drop(currentSize)
+            val newCells = newItems.map { Cell(it) }
+            cells = cells + newCells
+            newCells.forEach { grid.add(it) }
+            grid.revalidate()
+            grid.repaint()
+            return
+        }
+
         val view = scroll.viewport.viewRect
         // 仅加载可视区域，外加上下各半屏预取，滚动更顺滑而不浪费
         val expanded = Rectangle(view.x, view.y - view.height / 2, view.width, view.height * 2)

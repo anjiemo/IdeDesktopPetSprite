@@ -179,18 +179,24 @@ class CharacterPickerDialog(
     }
 
     private fun loadPetdex(force: Boolean) {
-        // 先用上次落盘的清单立即铺出网格（二次打开秒开），再后台拉取最新并替换
-        if (!force && !petdexLoaded) {
-            PetdexClient.cachedManifest()?.let { cached ->
-                petdexLoaded = true
-                petdexAllPets = cached
-                rebuildKindOptions(cached)
-                refilterPetdex(resetScroll = true)
-            }
-        }
         petdexStatus.text = if (petdexLoaded) "正在刷新 Petdex 形象库…" else "正在加载 Petdex 形象库…"
         val token = ++petdexToken
         ApplicationManager.getApplication().executeOnPooledThread {
+            // 先尝试从本地磁盘清单缓存加载，放入后台线程解析（避免阻塞主线程打开动作）
+            if (!force && !petdexLoaded) {
+                val cached = PetdexClient.cachedManifest()
+                if (cached != null) {
+                    ApplicationManager.getApplication().invokeLater({
+                        if (token == petdexToken) {
+                            petdexLoaded = true
+                            petdexAllPets = cached
+                            rebuildKindOptions(cached)
+                            refilterPetdex(resetScroll = true)
+                        }
+                    }, ModalityState.any())
+                }
+            }
+
             val res = runCatching { PetdexClient.fetchManifest() }
             ApplicationManager.getApplication().invokeLater({
                 if (token != petdexToken) return@invokeLater

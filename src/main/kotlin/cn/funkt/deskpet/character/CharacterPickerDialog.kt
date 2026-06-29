@@ -169,7 +169,7 @@ class CharacterPickerDialog(
                 petdexLoaded = true
                 petdexAllPets = cached
                 rebuildKindOptions(cached)
-                refilterPetdex()
+                refilterPetdex(resetScroll = true)
             }
         }
         petdexStatus.text = if (petdexLoaded) "正在刷新 Petdex 形象库…" else "正在加载 Petdex 形象库…"
@@ -179,10 +179,15 @@ class CharacterPickerDialog(
             ApplicationManager.getApplication().invokeLater({
                 if (token != petdexToken) return@invokeLater
                 res.onSuccess { pets ->
+                    val changed = !petdexLoaded || pets != petdexAllPets
                     petdexLoaded = true
                     petdexAllPets = pets
-                    rebuildKindOptions(pets)
-                    refilterPetdex()
+                    if (changed) {
+                        rebuildKindOptions(pets)
+                        refilterPetdex(resetScroll = false)
+                    } else {
+                        petdexStatus.text = "共 ${petdexAllPets.size} 个形象 · 来源 petdex.dev"
+                    }
                 }.onFailure {
                     if (!petdexLoaded) petdexStatus.text = "加载失败：${it.message ?: "网络不可用"}（可点击刷新重试）"
                     else petdexStatus.text = "已显示缓存（刷新失败：${it.message ?: "网络不可用"}）"
@@ -198,7 +203,7 @@ class CharacterPickerDialog(
         petdexKind.selectedItem = if (prev != null && (prev == ALL_KINDS || kinds.contains(prev))) prev else ALL_KINDS
     }
 
-    private fun refilterPetdex() {
+    private fun refilterPetdex(resetScroll: Boolean = true) {
         val q = petdexSearch.text.trim().lowercase()
         val kind = (petdexKind.selectedItem as? String)?.takeIf { it != ALL_KINDS }.orEmpty()
         val filtered = petdexAllPets.filter { pet ->
@@ -206,7 +211,7 @@ class CharacterPickerDialog(
                 (q.isEmpty() || "${pet.displayName} ${pet.slug} ${pet.kind} ${pet.submittedBy}".lowercase().contains(q))
         }
         filtered.forEach { petByCharId["petdex:${it.slug}"] = it }
-        petdexGrid.setItems(filtered.map { it.toGridItem() })
+        petdexGrid.setItems(filtered.map { it.toGridItem() }, resetScroll)
         petdexStatus.text = when {
             petdexAllPets.isEmpty() -> "暂无可用形象"
             filtered.isEmpty() -> "没有匹配的形象"

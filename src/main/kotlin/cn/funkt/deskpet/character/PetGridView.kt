@@ -90,7 +90,6 @@ class PetGridView(
     val component: JComponent get() = scroll
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val loading: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
 
     private var cells: List<Cell> = emptyList()
     private var selectedCell: Cell? = null
@@ -106,16 +105,18 @@ class PetGridView(
         })
     }
 
-    fun setItems(items: List<Item>) {
+    fun setItems(items: List<Item>, resetScroll: Boolean = true) {
         generation++
-        loading.clear()
+        scope.coroutineContext.cancelChildren() // 取消该网格之前所有正在进行的异步加载任务
         selectedCell = null
         cells = items.map { Cell(it) }
         grid.removeAll()
         cells.forEach { grid.add(it) }
         grid.revalidate()
         grid.repaint()
-        scroll.verticalScrollBar.value = 0
+        if (resetScroll) {
+            scroll.verticalScrollBar.value = 0
+        }
         debounce.restart()
     }
 
@@ -172,9 +173,9 @@ class PetGridView(
         if (cell.job?.isActive == true) return
         val id = cell.item.id
         PetThumbnails.cached(id)?.let { cell.thumb = it; return }
-        if (!loading.add(id)) return
         val gen = generation
         cell.job = scope.launch {
+            val currentJob = coroutineContext[Job]
             var img: BufferedImage? = null
             try {
                 img = withContext(Dispatchers.IO) {
@@ -193,8 +194,9 @@ class PetGridView(
                 }, ModalityState.any())
             } finally {
                 ApplicationManager.getApplication().invokeLater({
-                    loading.remove(id)
-                    cell.job = null
+                    if (cell.job === currentJob) {
+                        cell.job = null
+                    }
                 }, ModalityState.any())
             }
         }

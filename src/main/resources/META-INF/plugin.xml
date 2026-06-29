@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>cn.funkt.deskpet</id>
     <name>IDE Desktop Pet Sprite（IDE桌面宠物精灵）</name>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <vendor email="2695734816@qq.com" url="https://github.com/anjiemo/">anjiemo</vendor>
 
     <description><![CDATA[
@@ -12,13 +12,20 @@
             <li>同步 / 索引 / 构建 / 运行 各有不同动画与状态徽标</li>
             <li>成功或失败时会有庆祝 / 沮丧的表情反馈</li>
             <li>悬浮窗置顶、可拖拽、可调大小，位置自动记忆</li>
-            <li>Settings → Tools → IDE Desktop Pet Sprite 可配置：启用 / 尺寸 / 按状态响应 / 按项目显示</li>
+            <li>可切换形象：内置原创史莱姆、本地上传精灵图、在线形象库（Petdex），支持按项目设置不同形象</li>
+            <li>Settings → Tools → IDE Desktop Pet Sprite 可配置：启用 / 尺寸 / 默认形象 / 按状态响应 / 按项目显示与形象</li>
         </ul>
         作者 <a href="https://github.com/anjiemo/">anjiemo</a>。<br/>
         Copyright © 2026 anjiemo · 基于 Apache License 2.0 开源。
     ]]></description>
 
     <change-notes><![CDATA[
+        <b>1.0.2</b>
+        <ul>
+            <li>新增「切换形象」：内置原创史莱姆、本地上传精灵图（PNG/WebP/GIF）、在线形象库 Petdex（petdex.dev）</li>
+            <li>支持按项目设置不同形象，并在设置页预览各项目当前形象</li>
+            <li>右键菜单新增「切换形象 / 恢复默认形象」</li>
+        </ul>
         <b>1.0.1</b>
         <ul>
             <li>新增设置页（Settings → Tools → IDE Desktop Pet Sprite）：启用开关、默认尺寸、按状态响应开关、按项目显示（支持多选批量）</li>

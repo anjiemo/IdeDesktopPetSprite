@@ -16,16 +16,23 @@
 
 package cn.funkt.deskpet
 
+import cn.funkt.deskpet.character.CharacterPickerDialog
+import cn.funkt.deskpet.character.PetCharacterStore
+import cn.funkt.deskpet.character.SpriteLoader
+import cn.funkt.deskpet.character.SpritePreviewComponent
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.JButton
 import javax.swing.JComponent
@@ -38,6 +45,7 @@ import javax.swing.ListSelectionModel
 class DeskPetConfigurable : Configurable {
 
     private val settings get() = DeskPetSettings.getInstance()
+    private val charStore get() = PetCharacterStore.getInstance()
 
     private val enabled = JBCheckBox("启用桌面宠物")
     private val sizeCombo = ComboBox(arrayOf("小", "中", "大"))
@@ -46,6 +54,13 @@ class DeskPetConfigurable : Configurable {
     private val reactBuild = JBCheckBox("构建 / 编译")
     private val reactRun = JBCheckBox("运行 / 调试")
 
+    // 形象
+    private val defaultCharLabel = JBLabel()
+    private val projectCharLabel = JBLabel()
+    private val projectPreview = SpritePreviewComponent(Dimension(72, 78))
+    private val setProjectCharBtn = JButton("为所选项目设置形象…")
+    private val followDefaultBtn = JButton("跟随默认形象")
+
     /** item = 项目 key；勾选 = 显示（未被永久关闭） */
     private val projectList = CheckBoxList<String>()
 
@@ -53,6 +68,7 @@ class DeskPetConfigurable : Configurable {
 
     override fun createComponent(): JComponent {
         projectList.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
+        projectList.addListSelectionListener { if (!it.valueIsAdjusting) refreshProjectChar() }
 
         val showSel = JButton("显示所选").apply { addActionListener { setSelected(true) } }
         val hideSel = JButton("隐藏所选").apply { addActionListener { setSelected(false) } }
@@ -67,20 +83,118 @@ class DeskPetConfigurable : Configurable {
             add(reactSync); add(reactIndex); add(reactBuild); add(reactRun)
         }
 
+        // 默认形象
+        val defaultCharPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
+            isOpaque = false
+            add(defaultCharLabel)
+            add(JButton("切换默认形象…").apply { addActionListener { changeDefault() } })
+        }
+
         val listPanel = JPanel(BorderLayout()).apply {
             add(JBScrollPane(projectList).also { it.preferredSize = JBUI.size(380, 150) }, BorderLayout.CENTER)
             add(buttons, BorderLayout.SOUTH)
         }
 
+        // 所选项目的形象（预览 + 设置 / 跟随默认）
+        setProjectCharBtn.addActionListener { setProjectCharacter() }
+        followDefaultBtn.addActionListener { followDefault() }
+        val pcButtons = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
+            isOpaque = false
+            add(setProjectCharBtn); add(followDefaultBtn)
+        }
+        val pcRight = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            add(projectCharLabel, BorderLayout.NORTH)
+            add(pcButtons, BorderLayout.SOUTH)
+        }
+        val projectCharPanel = JPanel(BorderLayout(10, 0)).apply {
+            isOpaque = false
+            add(projectPreview, BorderLayout.WEST)
+            add(pcRight, BorderLayout.CENTER)
+        }
+
         val root = panel {
             row { cell(enabled) }
             row("默认尺寸：") { cell(sizeCombo) }
+            row("默认形象：") { cell(defaultCharPanel) }
             row("响应状态：") { cell(states) }
             row { label("按项目显示（勾选 = 显示该项目的宠物；取消 = 永久关闭）") }
             row { cell(listPanel).align(AlignX.FILL) }
+            row { label("所选项目的形象（在上方列表中选中某项目后查看 / 设置）") }
+            row { cell(projectCharPanel).align(AlignX.FILL) }
         }
         reset()
         return root
+    }
+
+    // ---------------- 形象 ----------------
+
+    private fun selectedProjectKey(): String? {
+        val idx = projectList.selectedIndex
+        return if (idx < 0) null else projectList.getItemAt(idx)
+    }
+
+    private fun projectForKey(key: String): Project? =
+        ProjectManager.getInstance().openProjects.firstOrNull { !it.isDefault && DeskPetSettings.keyOf(it) == key }
+
+    private fun refreshDefaultChar() {
+        val c = charStore.defaultCharacter()
+        defaultCharLabel.text = "${c.displayName} · ${c.subtitle}"
+    }
+
+    private fun refreshProjectChar() {
+        val key = selectedProjectKey()
+        if (key == null) {
+            projectCharLabel.text = "（未选择项目）"
+            projectPreview.sheet = null
+            setProjectCharBtn.isEnabled = false
+            followDefaultBtn.isEnabled = false
+            return
+        }
+        val c = charStore.characterFor(key)
+        val override = charStore.hasProjectOverride(key)
+        projectCharLabel.text = "${c.displayName} · ${c.subtitle}" + if (override) "（项目专用）" else "（跟随默认）"
+        projectPreview.sheet = SpriteLoader.load(c)
+        setProjectCharBtn.isEnabled = true
+        followDefaultBtn.isEnabled = override
+    }
+
+    private fun changeDefault() {
+        val dialog = CharacterPickerDialog(null, charStore.defaultCharacter())
+        if (dialog.showAndGet()) {
+            dialog.result?.let { charStore.setDefault(it) }
+            refreshDefaultChar()
+            refreshProjectChar()
+            applyCharToAll()
+        }
+    }
+
+    private fun setProjectCharacter() {
+        val key = selectedProjectKey() ?: return
+        val dialog = CharacterPickerDialog(projectForKey(key), charStore.characterFor(key))
+        if (dialog.showAndGet()) {
+            dialog.result?.let { charStore.setForProject(key, it) }
+            refreshProjectChar()
+            applyCharToAll()
+        }
+    }
+
+    private fun followDefault() {
+        val key = selectedProjectKey() ?: return
+        charStore.setForProject(key, null)
+        refreshProjectChar()
+        applyCharToAll()
+    }
+
+    private fun applyCharToAll() {
+        for (p in ProjectManager.getInstance().openProjects) {
+            if (p.isDefault) continue
+            p.getServiceIfCreated(PetController::class.java)?.applyCharacter()
+        }
+    }
+
+    override fun disposeUIResources() {
+        projectPreview.stop()
     }
 
     private fun setAll(visible: Boolean) {
@@ -163,5 +277,7 @@ class DeskPetConfigurable : Configurable {
         reactBuild.isSelected = settings.reactBuild
         reactRun.isSelected = settings.reactRun
         rebuildList()
+        refreshDefaultChar()
+        refreshProjectChar()
     }
 }

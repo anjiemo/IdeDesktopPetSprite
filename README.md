@@ -40,7 +40,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 ## Interaction
 
 - Drag with the left mouse button; position is remembered automatically (multi-monitor safe, snaps back to a corner if off-screen).
-- Right-click menu: reset position / resize (S · M · L) / hide pet (restored on reopening the project).
+- Right-click menu: reset position / resize (S · M · L) / **switch character · restore default character** / temporarily hide (restored on reopening the project) / permanently close (re-enable in Settings).
 - Always-on-top, transparent background, never steals editor focus.
 
 ## Build & install
@@ -48,7 +48,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 > Requires JDK 17 locally. If `JAVA_HOME` doesn't point to 17, set it first; the wrapper is pinned to Gradle 8.14.5.
 
 ```bash
-# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.1.zip)
+# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.2.zip)
 ./gradlew buildPlugin
 ```
 
@@ -58,7 +58,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 ```
 
 Install into your Android Studio:
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.1.zip`**, then restart.
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.2.zip`**, then restart.
 Open any project and the pet appears at the bottom-right of the desktop.
 
 ### Want to use your local IDE (e.g. Android Studio) as the debug sandbox?
@@ -82,12 +82,20 @@ intellijPlatformTesting {
 }
 ```
 
-## Replace the pet sprite
+## Characters
 
-The default sprite is a grid sprite sheet: **8 cols × 9 rows, 192×208 per frame**, each row is one action
-(0=idle, 1=look, 2=run, 3=fail, 4=think, 5=jump).
-Replace `src/main/resources/pets/gel-slime.png` with any sprite sheet of the same spec (convert webp to png first if needed).
-If the size differs, adjust `FRAME_W/FRAME_H/COLS/ROWS` in `PetSprite.kt`.
+You can switch the pet's character at runtime — no rebuild needed:
+
+- **Built-in** — the original jelly slime "Gel".
+- **Local upload** — pick a PNG / WebP / GIF sprite sheet from disk (it is copied into the IDE cache so moving the original won't break it).
+- **Online catalog (Petdex)** — browse and download community characters from [petdex.dev](https://petdex.dev) in a **thumbnail grid** that loads lazily as you scroll (no per-item clicking), with search and kind filtering.
+
+Open the picker from the pet's **right-click menu → Switch character…**, or from
+**Settings → Tools → IDE Desktop Pet Sprite**, where you can set the **default character** and a **per-project character** (each open project's current character is previewed there).
+
+Sprite sheets follow the grid convention **192×208 per frame**; columns / rows are auto-detected from the image size (the built-in sheet is 8 cols × 9 rows). Row semantics: 0=idle, 1=look, 2=run, 3=fail, 4=think, 5=jump. WebP is decoded directly (no manual conversion needed).
+
+To change the bundled default sprite, replace `src/main/resources/pets/gel-slime.png` with a sheet of the same spec.
 
 ## Author
 
@@ -99,6 +107,12 @@ The default sprite (`pets/gel-slime.png`) is the original jelly slime "Gel" by a
 The project icon / logo (`docs/assets/logo.png`) is an original work by anjiemo, **copyright anjiemo, all rights reserved**; it is the project's identity mark and is **not covered by the Apache-2.0 reuse grant** (cf. Apache-2.0 §6 Trademarks). Do not use it for other projects, products, or commercial purposes without written permission.
 
 You may also replace it with your own sprite sheet of the same spec; for third-party assets, licensing is determined by their respective sources.
+
+Characters downloaded from the **Petdex** online catalog are **not bundled** with this plugin — they are fetched at runtime from [petdex.dev](https://petdex.dev) (catalog source: [crafter-station/petdex](https://github.com/crafter-station/petdex)) and remain the property of their respective authors, under the licenses provided by Petdex / those authors. This plugin only downloads assets from the official `assets.petdex.dev` host over HTTPS.
+
+## Third-party dependencies
+
+- [TwelveMonkeys ImageIO](https://github.com/haraldk/TwelveMonkeys) (`imageio-webp`, `imageio-core`) — WebP decoding, licensed under [Apache-2.0](https://github.com/haraldk/TwelveMonkeys/blob/master/LICENSE.txt). Bundled with the plugin.
 
 ## License
 

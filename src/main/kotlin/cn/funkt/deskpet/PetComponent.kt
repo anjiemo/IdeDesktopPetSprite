@@ -38,6 +38,13 @@ class PetComponent(scale: Double) : JComponent() {
             repaint()
         }
 
+    /** 当前精灵图（形象）。切换形象时替换并重绘。 */
+    var sheet: SpriteSheet = PetSprite.builtin
+        set(value) {
+            field = value
+            repaint()
+        }
+
     private var state: PetState = PetState.IDLE
     private var frameIndex = 0
 
@@ -87,7 +94,7 @@ class PetComponent(scale: Double) : JComponent() {
             )
 
             val col = state.frames[frameIndex.coerceIn(0, state.frames.size - 1)]
-            val frame = PetSprite.frame(col, state.row)
+            val frame = sheet.frame(col, state.row)
             g2.drawImage(frame, PAD, 0, petW, petH, null)
 
             drawBadge(g2)

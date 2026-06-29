@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cn.funkt"
-version = "1.0.1"
+version = "1.0.2"
 
 repositories {
     maven { url = uri("https://maven.aliyun.com/repository/public") }
@@ -24,6 +24,11 @@ dependencies {
         intellijIdeaCommunity("2024.2.5")
         instrumentationTools()
     }
+
+    // WebP 解码（纯 Java，无原生库，跨平台）。Petdex / 多数社区形象的精灵图为 .webp，
+    // 而 JDK 自带 ImageIO 不支持 webp。TwelveMonkeys 为 Apache-2.0，可随插件一同分发。
+    implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")
+    implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0")
 }
 
 intellijPlatform {

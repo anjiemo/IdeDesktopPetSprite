@@ -41,7 +41,7 @@
 ## 交互
 
 - 鼠标左键拖动可移动；位置自动记忆（多屏安全，越界自动回角落）。
-- 右键菜单：重置位置 / 调整尺寸（小·中·大）/ 隐藏宠物（重开项目恢复）。
+- 右键菜单：重置位置 / 调整尺寸（小·中·大）/ **切换形象 · 恢复默认形象** / 临时隐藏（重开项目恢复）/ 永久关闭（需在设置中重新开启）。
 - 悬浮窗置顶、透明背景、不抢占编辑器焦点。
 
 ## 构建与安装
@@ -49,7 +49,7 @@
 > 本机需 JDK 17。若 `JAVA_HOME` 未指向 17，请先设置；wrapper 已固定 Gradle 8.14.5。
 
 ```bash
-# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.1.zip）
+# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.2.zip）
 ./gradlew buildPlugin
 ```
 
@@ -59,7 +59,7 @@
 ```
 
 安装到你的 Android Studio：
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.1.zip`**，重启即可。
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.2.zip`**，重启即可。
 打开任意项目后桌面右下角即出现宠物。
 
 ### 想用本机真实 IDE（如 Android Studio）作为调试沙箱？
@@ -83,12 +83,19 @@ intellijPlatformTesting {
 }
 ```
 
-## 更换宠物素材
+## 切换形象
 
-默认精灵图为一张网格精灵表：**8 列 × 9 行，每帧 192×208**，每行对应一种动作
-（0=待机, 1=张望, 2=奔跑, 3=失败, 4=思考, 5=跳跃）。
-替换 `src/main/resources/pets/gel-slime.png` 为任意同规格精灵图即可（如为 webp 请先转 png）。
-如尺寸不同，调整 `PetSprite.kt` 中的 `FRAME_W/FRAME_H/COLS/ROWS`。
+无需重新编译即可在运行时切换宠物形象：
+
+- **内置形象** —— 原创果冻史莱姆「Gel」。
+- **本地上传** —— 从磁盘选择 PNG / WebP / GIF 网格精灵图（会复制进 IDE 缓存目录，移动/删除原文件也不受影响）。
+- **在线形象库（Petdex）** —— 以**网格缩略图**浏览并下载 [petdex.dev](https://petdex.dev) 的社区形象；缩略图随视口滚动自动加载（无需逐个点击），支持搜索与按分类筛选。
+
+入口：宠物**右键菜单 → 切换形象…**，或 **Settings → Tools → IDE Desktop Pet Sprite**——在设置页可设置**默认形象**与**按项目形象**（并预览各打开项目当前使用的形象）。
+
+精灵图遵循 **每帧 192×208** 的网格约定；列数 / 行数按图片尺寸自动识别（内置为 8 列 × 9 行）。行语义：0=待机, 1=张望, 2=奔跑, 3=失败, 4=思考, 5=跳跃。WebP 可直接解码，无需手动转换。
+
+如需更换随插件分发的默认精灵图，替换 `src/main/resources/pets/gel-slime.png` 为同规格图即可。
 
 ## 作者
 
@@ -99,6 +106,12 @@ anjiemo · <2695734816@qq.com> · https://github.com/anjiemo/
 默认精灵图（`pets/gel-slime.png`）为 anjiemo 原创的果冻史莱姆「Gel」，版权归 anjiemo 所有，随项目以 Apache-2.0 提供，可自由使用、修改、再分发。
 项目图标 / Logo（`docs/assets/logo.png`）为 anjiemo 原创，**版权归 anjiemo 所有，保留一切权利**；它是本项目的标识，**不在 Apache-2.0 的再利用授权范围内**（参见 Apache-2.0 §6 商标条款），未经书面许可不得用于其它项目、产品或商业用途。
 你也可以替换为自备的同规格精灵图；导入第三方素材时，其授权由该素材各自来源决定。
+
+从 **Petdex** 在线形象库下载的形象**不随插件分发**——它们在运行时从 [petdex.dev](https://petdex.dev) 获取（形象库来源：[crafter-station/petdex](https://github.com/crafter-station/petdex)），版权归各自作者所有，授权以 Petdex / 原作者提供的条款为准。本插件仅从官方 `assets.petdex.dev` 域名经 HTTPS 下载素材。
+
+## 第三方依赖
+
+- [TwelveMonkeys ImageIO](https://github.com/haraldk/TwelveMonkeys)（`imageio-webp`、`imageio-core`）—— 用于 WebP 解码，基于 [Apache-2.0](https://github.com/haraldk/TwelveMonkeys/blob/master/LICENSE.txt) 许可，随插件一同打包分发。
 
 ## 许可
 

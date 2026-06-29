@@ -16,6 +16,8 @@
 
 package cn.funkt.deskpet
 
+import cn.funkt.deskpet.character.PetCharacterStore
+import cn.funkt.deskpet.character.SpriteLoader
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
@@ -88,8 +90,21 @@ class PetController(private val project: Project) : Disposable {
         }
         ensureWindow()
         window?.setScale(settings.scale)
+        window?.setSheet(currentSheet())
         applyState(baseState())
     }
+
+    /** 形象切换后实时换装 */
+    fun applyCharacter() = onUi {
+        if (!isAllowed()) return@onUi
+        ensureWindow()
+        window?.setSheet(currentSheet())
+        applyState(baseState())
+    }
+
+    /** 解析本项目当前应使用的精灵图（形象） */
+    private fun currentSheet() =
+        SpriteLoader.load(PetCharacterStore.getInstance().characterFor(projectKey))
 
     /** 优先级：运行 > 构建/编译/Gradle 任务 > 同步 > 索引 > 待机 */
     private fun baseState(): PetState = when {
@@ -119,7 +134,10 @@ class PetController(private val project: Project) : Disposable {
 
     private fun ensureWindow() {
         if (disposed || !isAllowed() || window != null) return
-        window = PetWindow(project).also { it.showPet() }
+        window = PetWindow(project).also {
+            it.setSheet(currentSheet())
+            it.showPet()
+        }
     }
 
     private fun applyState(state: PetState) {

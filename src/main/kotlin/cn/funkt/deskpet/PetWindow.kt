@@ -16,7 +16,10 @@
 
 package cn.funkt.deskpet
 
+import cn.funkt.deskpet.character.CharacterPickerDialog
+import cn.funkt.deskpet.character.PetCharacterStore
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.Color
@@ -61,6 +64,11 @@ class PetWindow(private val project: Project) : JWindow() {
     }
 
     fun setState(state: PetState) = pet.setState(state)
+
+    /** 切换形象（配置页 / 右键换装时调用） */
+    fun setSheet(sheet: SpriteSheet) {
+        pet.sheet = sheet
+    }
 
     /** 应用尺寸（配置页 / 右键改尺寸时调用） */
     fun setScale(scale: Double) {
@@ -115,6 +123,20 @@ class PetWindow(private val project: Project) : JWindow() {
             })
         }
         menu.addSeparator()
+        // 切换形象（仅对本项目生效）
+        menu.add(JMenuItem("切换形象…").apply {
+            addActionListener { pickCharacter() }
+        })
+        val store = PetCharacterStore.getInstance()
+        if (store.hasProjectOverride(DeskPetSettings.keyOf(project))) {
+            menu.add(JMenuItem("恢复默认形象").apply {
+                addActionListener {
+                    store.setForProject(DeskPetSettings.keyOf(project), null)
+                    project.service<PetController>().applyCharacter()
+                }
+            })
+        }
+        menu.addSeparator()
         // 临时隐藏：仅隐藏窗口，重开项目后恢复
         menu.add(JMenuItem("临时隐藏（重开项目恢复）").apply {
             addActionListener { this@PetWindow.isVisible = false }
@@ -127,6 +149,17 @@ class PetWindow(private val project: Project) : JWindow() {
             }
         })
         menu.show(pet, e.x, e.y)
+    }
+
+    /** 打开切换形象对话框；选择结果设为本项目专用形象并实时换装 */
+    private fun pickCharacter() {
+        val store = PetCharacterStore.getInstance()
+        val key = DeskPetSettings.keyOf(project)
+        val dialog = CharacterPickerDialog(project, store.characterFor(key))
+        if (dialog.showAndGet()) {
+            dialog.result?.let { store.setForProject(key, it) }
+            project.service<PetController>().applyCharacter()
+        }
     }
 
     private fun restoreLocation() {

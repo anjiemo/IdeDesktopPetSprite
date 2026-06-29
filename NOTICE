@@ -10,3 +10,14 @@ original work by anjiemo and contains no third-party artwork.
 Development tooling under the tools/ directory is the author's proprietary
 work, is NOT licensed under the Apache License 2.0, and is not part of the
 distributed plugin. See each such file's own header for its terms.
+
+------------------------------------------------------------------------------
+Third-party components bundled with the distributed plugin:
+
+TwelveMonkeys ImageIO (imageio-webp, imageio-core and their dependencies)
+Copyright the TwelveMonkeys contributors (https://github.com/haraldk/TwelveMonkeys)
+Licensed under the Apache License, Version 2.0. Used for WebP decoding.
+
+Characters from the Petdex online catalog (https://petdex.dev) are NOT bundled;
+they are downloaded at runtime and remain the property of their respective
+authors under the licenses provided by Petdex / those authors.

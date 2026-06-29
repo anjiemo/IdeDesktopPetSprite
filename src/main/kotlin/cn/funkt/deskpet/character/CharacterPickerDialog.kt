@@ -294,6 +294,7 @@ class CharacterPickerDialog(
             alignmentX = 0f
         })
         form.add(javax.swing.Box.createVerticalStrut(10))
+        localNameField.preferredSize = java.awt.Dimension(280, localNameField.preferredSize.height)
         form.add(rowOf("名称：", localNameField))
         form.add(javax.swing.Box.createVerticalStrut(8))
         form.add(rowOf("", chooseBtn))

@@ -42,6 +42,16 @@ intellijPlatform {
             untilBuild = "299.*"
         }
     }
+
+    // 发布到 JetBrains Marketplace：https://plugins.jetbrains.com
+    // Token：https://plugins.jetbrains.com/author/me/tokens → 环境变量 PUBLISH_TOKEN
+    // 或命令行：-PintellijPlatformPublishingToken=xxx
+    // 发布：./gradlew publishPlugin
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+            .orElse(providers.gradleProperty("intellijPlatformPublishingToken"))
+        channels = listOf("default")
+    }
 }
 
 // 调试预览：./gradlew runLocalIde

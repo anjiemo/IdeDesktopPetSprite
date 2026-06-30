@@ -6,3 +6,4 @@ out/
 .intellijPlatform/
 .kotlin/
 local.properties
+gradle-local.properties

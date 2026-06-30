@@ -49,7 +49,7 @@
 > 本机需 JDK 17。若 `JAVA_HOME` 未指向 17，请先设置；wrapper 已固定 Gradle 8.14.5。
 
 ```bash
-# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.5.zip）
+# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.6.zip）
 ./gradlew buildPlugin
 ```
 
@@ -59,7 +59,7 @@
 ```
 
 安装到你的 Android Studio：
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.5.zip`**，重启即可。
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.6.zip`**，重启即可。
 打开任意项目后桌面右下角即出现宠物。
 
 ### 想用本机真实 IDE（如 Android Studio）作为调试沙箱？

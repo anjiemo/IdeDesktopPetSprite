@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>cn.funkt.deskpet</id>
     <name>IDE Desktop Pet Sprite</name>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <vendor email="2695734816@qq.com" url="https://github.com/anjiemo/">anjiemo</vendor>
 
     <description><![CDATA[IDE Desktop Pet Sprite is a desktop floating pet for IntelliJ-based IDEs and Android Studio. It reacts to Gradle sync, indexing, build/compile, and run/debug states with dedicated animations and success or failure expressions.<br/>
@@ -36,6 +36,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <b>1.0.6</b>
+        <ul>
+            <li>移除 until-build 上限，修复 Android Studio 2026.1.3 Nightly（261.25134.95）Marketplace 显示不兼容</li>
+        </ul>
         <b>1.0.5</b>
         <ul>
             <li>修复 Marketplace 兼容性：Gradle 监听改用 projectPath 新版 API，移除 findProject</li>

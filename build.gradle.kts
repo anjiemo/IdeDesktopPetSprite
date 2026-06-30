@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.21"
-    id("org.jetbrains.intellij.platform") version "2.1.0"
+    id("org.jetbrains.intellij.platform") version "2.2.1"
 }
 
 group = "cn.funkt"
@@ -22,7 +22,6 @@ dependencies {
         // 注意：不要把本机 AS 261 用作编译 SDK —— 它是 Kotlin 2.3.0 + JDK 21，
         // 与 kotlin("jvm") 2.0.21 版本倒挂，会出现 "incompatible version of Kotlin" 编译失败。
         intellijIdeaCommunity("2024.2.5")
-        instrumentationTools()
     }
 
     // WebP 解码（纯 Java，无原生库，跨平台）。Petdex / 多数社区形象的精灵图为 .webp，

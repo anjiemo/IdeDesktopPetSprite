@@ -1,25 +1,43 @@
 <idea-plugin>
     <id>cn.funkt.deskpet</id>
-    <name>IDE Desktop Pet Sprite（IDE桌面宠物精灵）</name>
-    <version>1.0.3</version>
+    <name>IDE Desktop Pet Sprite</name>
+    <version>1.0.4</version>
     <vendor email="2695734816@qq.com" url="https://github.com/anjiemo/">anjiemo</vendor>
 
-    <description><![CDATA[
-        <b>IDE Desktop Pet Sprite · 构建状态桌宠</b><br/>
-        在 Gradle Sync、建立索引、构建/编译、运行 等不同状态下，于桌面显示一只会随状态变化的桌面悬浮宠物。<br/>
-        宠物素材可替换（默认内置一只原创史莱姆 Gel）。<br/>
-        <ul>
-            <li>同步 / 索引 / 构建 / 运行 各有不同动画与状态徽标</li>
-            <li>成功或失败时会有庆祝 / 沮丧的表情反馈</li>
-            <li>悬浮窗置顶、可拖拽、可调大小，位置自动记忆</li>
-            <li>可切换形象：内置原创史莱姆、本地上传精灵图、在线形象库（Petdex），支持按项目设置不同形象</li>
-            <li>Settings → Tools → Desktop Pet Sprite（桌面宠物），或菜单 Tools → Desktop Pet Sprite 设置…，或双击 Shift 搜索「桌宠」</li>
-        </ul>
-        作者 <a href="https://github.com/anjiemo/">anjiemo</a>。<br/>
-        Copyright © 2026 anjiemo · 基于 Apache License 2.0 开源。
+    <description><![CDATA[IDE Desktop Pet Sprite is a desktop floating pet for IntelliJ-based IDEs and Android Studio. It reacts to Gradle sync, indexing, build/compile, and run/debug states with dedicated animations and success or failure expressions.<br/>
+<br/>
+<b>Features</b><br/>
+<ul>
+    <li>Distinct animations and status badges for sync, indexing, build, and run</li>
+    <li>Celebration or dejected expressions on success or failure</li>
+    <li>Always-on-top floating window; draggable, resizable (S/M/L); position remembered</li>
+    <li>Switch character: built-in original slime Gel, local sprite upload, online Petdex library; per-project character</li>
+    <li>Settings → Tools → Desktop Pet Sprite, or Tools → Desktop Pet Sprite Settings, or Search Everywhere for "Desktop Pet"</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<b>IDE Desktop Pet Sprite · 构建状态桌宠</b><br/>
+在 Gradle Sync、建立索引、构建/编译、运行 等不同状态下，于桌面显示一只会随状态变化的桌面悬浮宠物。宠物素材可替换（默认内置一只原创史莱姆 Gel）。<br/>
+<br/>
+<b>功能</b><br/>
+<ul>
+    <li>同步 / 索引 / 构建 / 运行 各有不同动画与状态徽标</li>
+    <li>成功或失败时会有庆祝 / 沮丧的表情反馈</li>
+    <li>悬浮窗置顶、可拖拽、可调大小，位置自动记忆</li>
+    <li>可切换形象：内置原创史莱姆、本地上传精灵图、在线形象库（Petdex），支持按项目设置不同形象</li>
+    <li>Settings → Tools → Desktop Pet Sprite（桌面宠物），或菜单 Tools → Desktop Pet Sprite 设置…，或双击 Shift 搜索「桌宠」</li>
+</ul>
+<br/>
+作者 <a href="https://github.com/anjiemo/">anjiemo</a> · Copyright © 2026 anjiemo · Apache License 2.0
     ]]></description>
 
     <change-notes><![CDATA[
+        <b>1.0.4</b>
+        <ul>
+            <li>修正 JetBrains Marketplace 上架校验（插件名称、中英文双语描述格式）</li>
+            <li>兼容版本范围更新至 IDE 2026.1（until-build 261.*）</li>
+        </ul>
         <b>1.0.3</b>
         <ul>
             <li>设置页更名 Desktop Pet Sprite（桌面宠物）；新增 Tools 菜单与 Search Everywhere 直达设置</li>

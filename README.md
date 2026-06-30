@@ -48,7 +48,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 > Requires JDK 17 locally. If `JAVA_HOME` doesn't point to 17, set it first; the wrapper is pinned to Gradle 8.14.5.
 
 ```bash
-# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.3.zip)
+# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.4.zip)
 ./gradlew buildPlugin
 ```
 
@@ -58,7 +58,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 ```
 
 Install into your Android Studio:
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.3.zip`**, then restart.
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.4.zip`**, then restart.
 Open any project and the pet appears at the bottom-right of the desktop.
 
 ### Want to use your local IDE (e.g. Android Studio) as the debug sandbox?

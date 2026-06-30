@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cn.funkt"
-version = "1.0.3"
+version = "1.0.4"
 
 repositories {
     maven { url = uri("https://maven.aliyun.com/repository/public") }
@@ -38,8 +38,8 @@ intellijPlatform {
         // id / name / vendor / description 均在 META-INF/plugin.xml 中声明
         ideaVersion {
             sinceBuild = "233"
-            // 开放上限，避免被新版本 AS 拦截；可按需收紧
-            untilBuild = "299.*"
+            // 与 JetBrains 2026.1 / Android Studio (build 261) 对齐；勿用 299.* 等虚构分支号
+            untilBuild = "261.*"
         }
     }
 

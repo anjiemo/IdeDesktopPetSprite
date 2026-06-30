@@ -35,7 +35,7 @@ intellijPlatform {
     pluginConfiguration {
         // id / name / vendor 在 plugin.xml；Marketplace 描述见 DESCRIPTION.md
         description = providers.provider {
-            layout.projectDirectory.file("DESCRIPTION.md").asFile.readText(Charsets.UTF_8)
+            layout.projectDirectory.file("docs/DESCRIPTION.md").asFile.readText(Charsets.UTF_8)
         }
         ideaVersion {
             sinceBuild = "242"

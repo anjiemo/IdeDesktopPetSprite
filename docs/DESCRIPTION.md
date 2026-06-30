@@ -11,7 +11,7 @@
         <a href="https://github.com/anjiemo/IdeDesktopPetSprite">GitHub</a> |
         <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/docs/README.zh-CN.md">中文文档</a> |
         <a href="https://github.com/anjiemo/IdeDesktopPetSprite#build--install">Get Started</a> |
-        <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/PRIVACY.md">Privacy</a>
+        <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/docs/PRIVACY.md">Privacy</a>
     </b>
 </p>
 <br/>
@@ -73,8 +73,7 @@
 <h2>Privacy · 隐私</h2>
 <p>
     No personal data is collected.
-    Optional Petdex downloads contact <a href="https://petdex.dev">petdex.dev</a> over HTTPS only when you use that feature.
-    See the <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/PRIVACY.md">Privacy Policy</a>.
+    Optional Petdex downloads contact <a href="https://petdex.dev">petdex.dev</a> over HTTPS only when you use that feature. By using this plugin, you consent to this data usage. See the <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/docs/PRIVACY.md">Privacy Policy</a>.
 </p>
 <p>
     不收集个人数据；仅在使用 Petdex 在线形象库时经 HTTPS 访问 petdex.dev。

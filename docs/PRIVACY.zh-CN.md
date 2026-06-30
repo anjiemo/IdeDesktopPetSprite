@@ -1,7 +1,7 @@
 # 隐私政策 — IDE Desktop Pet Sprite
 
 <p align="center">
-  <strong>中文</strong> · <a href="../PRIVACY.md">English</a>
+  <strong>中文</strong> · <a href="PRIVACY.md">English</a>
 </p>
 
 最后更新：2026-06-30

@@ -21,9 +21,8 @@ import cn.funkt.deskpet.character.PetCharacter
 import cn.funkt.deskpet.character.PetCharacterStore
 import cn.funkt.deskpet.character.PetdexClient
 import cn.funkt.deskpet.character.SpriteLoader
+import cn.funkt.deskpet.util.DeskPetUi
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import java.io.File
@@ -176,10 +175,7 @@ class PetController(private val project: Project) : Disposable {
     }
 
     private fun onUi(block: () -> Unit) {
-        ApplicationManager.getApplication().invokeLater(
-            { if (!disposed) block() },
-            ModalityState.any(),
-        )
+        DeskPetUi.runOnEdt { if (!disposed) block() }
     }
 
     private fun downloadActiveCharacter(c: PetCharacter) {
@@ -200,13 +196,13 @@ class PetController(private val project: Project) : Disposable {
                     PetdexClient.download(pet)
                 }
                 // 下载完成后，如果在下载期间用户没有换成别的宠物，则在 UI 线程应用新形象
-                ApplicationManager.getApplication().invokeLater({
+                DeskPetUi.runOnEdt {
                     val current = PetCharacterStore.getInstance().characterFor(projectKey)
                     if (current.id == c.id) {
-                        SpriteLoader.invalidate(c.id) // 确保重新加载刚刚下载的文件
+                        SpriteLoader.invalidate(c.id)
                         applyCharacter()
                     }
-                }, ModalityState.any())
+                }
             } catch (e: Exception) {
                 // 下载失败静默退出
             }

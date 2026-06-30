@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cn.funkt"
-version = "1.0.4"
+version = "1.0.5"
 
 repositories {
     maven { url = uri("https://maven.aliyun.com/repository/public") }
@@ -17,11 +17,9 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        // 编译用发布版 SDK（Kotlin 2.0.x，与本工程编译器一致）；插件只用稳定平台 API，
-        // 编出的 zip 可在更高版本 AS（含 2026.1/build 261）中加载。
-        // 注意：不要把本机 AS 261 用作编译 SDK —— 它是 Kotlin 2.3.0 + JDK 21，
-        // 与 kotlin("jvm") 2.0.21 版本倒挂，会出现 "incompatible version of Kotlin" 编译失败。
-        intellijIdeaCommunity("2024.2.5")
+        // 编译 SDK 2025.1.7.1；Gradle 监听使用 projectPath 新版 API。
+        // since 242 = 2024.2（2024.1 因平台 API 差异不在支持范围内）。
+        intellijIdeaCommunity("2025.1.7.1")
     }
 
     // WebP 解码（纯 Java，无原生库，跨平台）。Petdex / 多数社区形象的精灵图为 .webp，
@@ -37,9 +35,14 @@ intellijPlatform {
     pluginConfiguration {
         // id / name / vendor / description 均在 META-INF/plugin.xml 中声明
         ideaVersion {
-            sinceBuild = "233"
-            // 与 JetBrains 2026.1 / Android Studio (build 261) 对齐；勿用 299.* 等虚构分支号
+            sinceBuild = "242"
             untilBuild = "261.*"
+        }
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
         }
     }
 

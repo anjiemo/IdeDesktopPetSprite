@@ -17,6 +17,7 @@
 package cn.funkt.deskpet
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -114,8 +115,7 @@ class DeskPetSettings : PersistentStateComponent<DeskPetSettings.State> {
     fun hiddenKeys(): List<String> = st.hiddenKeys.toList()
 
     companion object {
-        fun getInstance(): DeskPetSettings =
-            ApplicationManager.getApplication().getService(DeskPetSettings::class.java)
+        fun getInstance(): DeskPetSettings = ApplicationManager.getApplication().service()
 
         /**
          * 项目唯一键：优先 basePath，回退 name

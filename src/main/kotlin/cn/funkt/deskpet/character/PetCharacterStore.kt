@@ -17,6 +17,7 @@
 package cn.funkt.deskpet.character
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -149,7 +150,6 @@ class PetCharacterStore : PersistentStateComponent<PetCharacterStore.State> {
     }
 
     companion object {
-        fun getInstance(): PetCharacterStore =
-            ApplicationManager.getApplication().getService(PetCharacterStore::class.java)
+        fun getInstance(): PetCharacterStore = ApplicationManager.getApplication().service()
     }
 }

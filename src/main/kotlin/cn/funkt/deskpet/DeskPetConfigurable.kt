@@ -21,6 +21,7 @@ import cn.funkt.deskpet.character.PetCharacterStore
 import cn.funkt.deskpet.character.SpriteLoader
 import cn.funkt.deskpet.character.SpritePreviewComponent
 import cn.funkt.deskpet.character.PetThumbnails
+import com.intellij.openapi.components.serviceIfCreated
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
@@ -222,7 +223,7 @@ class DeskPetConfigurable : Configurable {
     private fun applyCharToAll() {
         for (p in ProjectManager.getInstance().openProjects) {
             if (p.isDefault) continue
-            p.getServiceIfCreated(PetController::class.java)?.applyCharacter()
+            p.serviceIfCreated<PetController>()?.applyCharacter()
         }
     }
 
@@ -298,7 +299,7 @@ class DeskPetConfigurable : Configurable {
         // 实时生效到所有已打开的项目
         for (p in ProjectManager.getInstance().openProjects) {
             if (p.isDefault) continue
-            p.getServiceIfCreated(PetController::class.java)?.applySettings()
+            p.serviceIfCreated<PetController>()?.applySettings()
         }
     }
 

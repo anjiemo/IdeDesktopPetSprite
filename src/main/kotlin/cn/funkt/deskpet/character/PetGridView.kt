@@ -16,8 +16,7 @@
 
 package cn.funkt.deskpet.character
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
+import cn.funkt.deskpet.util.DeskPetUi
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.ui.JBColor
@@ -278,7 +277,7 @@ class PetGridView(
                         cell.item.loadThumb(indicator)
                     }
                 }
-                ApplicationManager.getApplication().invokeLater({
+                DeskPetUi.runOnEdt {
                     if (gen == generation) {
                         if (img != null) {
                             cell.thumb = img
@@ -289,20 +288,20 @@ class PetGridView(
                             cell.markFailed()
                         }
                     }
-                }, ModalityState.any())
+                }
             } catch (e: CancellationException) {
                 // 协程被取消，静默退出
             } catch (e: Exception) {
-                ApplicationManager.getApplication().invokeLater({
+                DeskPetUi.runOnEdt {
                     if (gen == generation) cell.markFailed()
-                }, ModalityState.any())
+                }
             } finally {
                 reg.dispose()
-                ApplicationManager.getApplication().invokeLater({
+                DeskPetUi.runOnEdt {
                     if (cell.job === currentJob) {
                         cell.job = null
                     }
-                }, ModalityState.any())
+                }
             }
         }
     }

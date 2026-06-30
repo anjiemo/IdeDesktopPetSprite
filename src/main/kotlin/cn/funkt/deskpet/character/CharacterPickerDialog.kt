@@ -18,8 +18,7 @@ package cn.funkt.deskpet.character
 
 import cn.funkt.deskpet.PetSprite
 import cn.funkt.deskpet.SpriteSheet
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
+import cn.funkt.deskpet.util.DeskPetUi
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.progress.ProgressIndicator
@@ -151,7 +150,7 @@ class CharacterPickerDialog(
             refreshSelection()
         }
         // 面板渲染完毕后再触发加载，确保 Tab UI 已经可见，不让 Petdex 数据加载阻塞弹窗展示
-        ApplicationManager.getApplication().invokeLater({ loadPetdex(force = false) }, ModalityState.any())
+        DeskPetUi.runOnEdt { loadPetdex(force = false) }
 
         val right = JPanel(BorderLayout()).apply {
             preferredSize = JBUI.size(190, 480)
@@ -201,25 +200,25 @@ class CharacterPickerDialog(
     private fun loadPetdex(force: Boolean) {
         petdexStatus.text = if (petdexLoaded) "正在刷新 Petdex 形象库…" else "正在加载 Petdex 形象库…"
         val token = ++petdexToken
-        ApplicationManager.getApplication().executeOnPooledThread {
+        DeskPetUi.runInBackground {
             // 先尝试从本地磁盘清单缓存加载，放入后台线程解析（避免阻塞主线程打开动作）
             if (!force && !petdexLoaded) {
                 val cached = PetdexClient.cachedManifest()
                 if (cached != null) {
-                    ApplicationManager.getApplication().invokeLater({
+                    DeskPetUi.runOnEdt {
                         if (token == petdexToken) {
                             petdexLoaded = true
                             petdexAllPets = cached
                             rebuildKindOptions(cached)
                             refilterPetdex(resetScroll = true)
                         }
-                    }, ModalityState.any())
+                    }
                 }
             }
 
             val res = runCatching { PetdexClient.fetchManifest() }
-            ApplicationManager.getApplication().invokeLater({
-                if (token != petdexToken) return@invokeLater
+            DeskPetUi.runOnEdt {
+                if (token != petdexToken) return@runOnEdt
                 res.onSuccess { pets ->
                     val changed = !petdexLoaded || pets != petdexAllPets
                     petdexLoaded = true
@@ -234,7 +233,7 @@ class CharacterPickerDialog(
                     if (!petdexLoaded) petdexStatus.text = "加载失败：${it.message ?: "网络不可用"}（可点击刷新重试）"
                     else petdexStatus.text = "已显示缓存（刷新失败：${it.message ?: "网络不可用"}）"
                 }
-            }, ModalityState.any())
+            }
         }
     }
 
@@ -256,15 +255,15 @@ class CharacterPickerDialog(
         val allPets = petdexAllPets
         val token = ++filterToken
         // 过滤和 toGridItem 转换放入后台线程，不阻塞 EDT；Cell 的创建仍在 EDT（Swing 线程安全）
-        ApplicationManager.getApplication().executeOnPooledThread {
+        DeskPetUi.runInBackground {
             val filtered = allPets.filter { pet ->
                 (kind.isEmpty() || pet.kind == kind) &&
                     (q.isEmpty() || pet.searchIndex.contains(q))
             }
             val items = filtered.map { it.toGridItem() }
             filtered.forEach { petByCharId["petdex:${it.slug}"] = it }
-            ApplicationManager.getApplication().invokeLater({
-                if (token != filterToken) return@invokeLater
+            DeskPetUi.runOnEdt {
+                if (token != filterToken) return@runOnEdt
                 petdexGrid.setItems(items, resetScroll)
                 petdexStatus.text = when {
                     allPets.isEmpty() -> "暂无可用形象"
@@ -272,7 +271,7 @@ class CharacterPickerDialog(
                     else -> "共 ${filtered.size} 个形象 · 来源 petdex.dev"
                 }
                 petdexSelected?.let { petdexGrid.selectById(it.id) }
-            }, ModalityState.any())
+            }
         }
     }
 
@@ -333,14 +332,14 @@ class CharacterPickerDialog(
         val path = vf.path
         localStatus.text = "正在读取…"
         val token = ++localToken
-        ApplicationManager.getApplication().executeOnPooledThread {
+        DeskPetUi.runInBackground {
             val res = runCatching {
                 val img = SpriteLoader.readImage(File(path)) ?: error("不是有效的精灵图（至少需 192×208）")
                 val dest = SpriteLoader.importLocalFile(File(path))
                 dest to SpriteSheet(img)
             }
-            ApplicationManager.getApplication().invokeLater({
-                if (token != localToken) return@invokeLater
+            DeskPetUi.runOnEdt {
+                if (token != localToken) return@runOnEdt
                 res.onSuccess { (dest, sheet) ->
                     pendingLocalPath = dest.absolutePath
                     pendingLocalSheet = sheet
@@ -353,7 +352,7 @@ class CharacterPickerDialog(
                     localStatus.text = "读取失败：${it.message ?: "未知错误"}"
                     rebuildLocalSelected()
                 }
-            }, ModalityState.any())
+            }
         }
     }
 
@@ -463,13 +462,13 @@ class CharacterPickerDialog(
     private fun ensurePreviewSheet(c: PetCharacter) {
         if (previewCache.containsKey(c.id)) return
         val token = ++previewToken
-        ApplicationManager.getApplication().executeOnPooledThread {
+        DeskPetUi.runInBackground {
             val sheet = runCatching { loadFullSheet(c) }.getOrNull()
-            ApplicationManager.getApplication().invokeLater({
-                if (token != previewToken || sheet == null) return@invokeLater
+            DeskPetUi.runOnEdt {
+                if (token != previewToken || sheet == null) return@runOnEdt
                 previewCache[c.id] = sheet
                 if (selected?.id == c.id) refreshSelection()
-            }, ModalityState.any())
+            }
         }
     }
 

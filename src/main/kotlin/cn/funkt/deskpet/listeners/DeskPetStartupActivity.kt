@@ -17,6 +17,7 @@
 package cn.funkt.deskpet.listeners
 
 import cn.funkt.deskpet.PetController
+import cn.funkt.deskpet.character.PetdexClient
 import com.intellij.execution.ExecutionListener
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.process.ProcessHandler
@@ -28,6 +29,8 @@ import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskListener
 import com.intellij.task.ProjectTaskManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * 项目启动时：展示宠物，并订阅「编译/构建」与「运行/调试」两类事件。
@@ -37,8 +40,8 @@ class DeskPetStartupActivity : ProjectActivity {
 
     override suspend fun execute(project: Project) {
         // 项目启动时在后台子线程预先读取解析本地 Petdex 缓存清单并载入内存，以实现后续弹窗瞬开且不白屏
-        com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread {
-            cn.funkt.deskpet.character.PetdexClient.cachedManifest()
+        withContext(Dispatchers.IO) {
+            PetdexClient.cachedManifest()
         }
 
         val controller = project.service<PetController>()

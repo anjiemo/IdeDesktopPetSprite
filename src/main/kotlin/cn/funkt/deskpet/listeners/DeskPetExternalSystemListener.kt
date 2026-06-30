@@ -16,52 +16,28 @@
 
 package cn.funkt.deskpet.listeners
 
-import cn.funkt.deskpet.PetController
-import com.intellij.openapi.components.service
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType
 
 /**
- * 监听外部系统（Gradle）任务：
- * - RESOLVE_PROJECT  → Gradle Sync（同步）
- * - EXECUTE_TASK     → Gradle 任务执行（构建 / assemble 等）
- * 该监听器是应用级单例，通过 task id 反查所属项目并路由到对应 PetController。
- * 这里覆盖的是单参回调签名（2024.2 接口的实际方法）。在更高版本平台上，
- * 新增的 (projectPath, id) 重载会通过默认方法链回调到这些单参方法，故新旧通用。
+ * Gradle / 外部系统任务监听（2025.1+ 新版 [projectPath] API）。
+ * 2024.2–2024.3 旧版入口见 [DeskPetExternalSystemListenerLegacy]。
  */
-@Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 class DeskPetExternalSystemListener : ExternalSystemTaskNotificationListener {
 
-    private fun keyOf(id: ExternalSystemTaskId): String? = when (id.type) {
-        ExternalSystemTaskType.RESOLVE_PROJECT -> PetController.KEY_SYNC
-        ExternalSystemTaskType.EXECUTE_TASK -> PetController.KEY_GRADLE
-        else -> null
+    override fun onStart(projectPath: String, id: ExternalSystemTaskId) {
+        DeskPetExternalSystemBridge.dispatchStart(projectPath, id)
     }
 
-    private fun controllerOf(id: ExternalSystemTaskId): PetController? {
-        val project = id.findProject() ?: return null
-        if (project.isDisposed) return null
-        return runCatching { project.service<PetController>() }.getOrNull()
+    override fun onSuccess(projectPath: String, id: ExternalSystemTaskId) {
+        DeskPetExternalSystemBridge.dispatchFinish(projectPath, id, success = true)
     }
 
-    override fun onStart(id: ExternalSystemTaskId, workingDir: String?) {
-        val key = keyOf(id) ?: return
-        controllerOf(id)?.onStart(key)
+    override fun onFailure(projectPath: String, id: ExternalSystemTaskId, exception: Exception) {
+        DeskPetExternalSystemBridge.dispatchFinish(projectPath, id, success = false)
     }
 
-    override fun onSuccess(id: ExternalSystemTaskId) {
-        val key = keyOf(id) ?: return
-        controllerOf(id)?.onFinish(key, true)
-    }
-
-    override fun onFailure(id: ExternalSystemTaskId, e: Exception) {
-        val key = keyOf(id) ?: return
-        controllerOf(id)?.onFinish(key, false)
-    }
-
-    override fun onCancel(id: ExternalSystemTaskId) {
-        val key = keyOf(id) ?: return
-        controllerOf(id)?.onFinish(key, false)
+    override fun onCancel(projectPath: String, id: ExternalSystemTaskId) {
+        DeskPetExternalSystemBridge.dispatchFinish(projectPath, id, success = false)
     }
 }

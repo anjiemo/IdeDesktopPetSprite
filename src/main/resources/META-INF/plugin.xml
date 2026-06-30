@@ -4,36 +4,7 @@
     <version>1.0.6</version>
     <vendor email="2695734816@qq.com" url="https://github.com/anjiemo/">anjiemo</vendor>
 
-    <description><![CDATA[IDE Desktop Pet Sprite is a desktop floating pet for IntelliJ-based IDEs and Android Studio. It reacts to Gradle sync, indexing, build/compile, and run/debug states with dedicated animations and success or failure expressions.<br/>
-<br/>
-<b>Features</b><br/>
-<ul>
-    <li>Distinct animations and status badges for sync, indexing, build, and run</li>
-    <li>Celebration or dejected expressions on success or failure</li>
-    <li>Always-on-top floating window; draggable, resizable (S/M/L); position remembered</li>
-    <li>Switch character: built-in original slime Gel, local sprite upload, online Petdex library; per-project character</li>
-    <li>Settings → Tools → Desktop Pet Sprite, or Tools → Desktop Pet Sprite Settings, or Search Everywhere for "Desktop Pet"</li>
-</ul>
-<br/>
-<hr/>
-<br/>
-<b>IDE Desktop Pet Sprite · 构建状态桌宠</b><br/>
-在 Gradle Sync、建立索引、构建/编译、运行 等不同状态下，于桌面显示一只会随状态变化的桌面悬浮宠物。宠物素材可替换（默认内置一只原创史莱姆 Gel）。<br/>
-<br/>
-<b>功能</b><br/>
-<ul>
-    <li>同步 / 索引 / 构建 / 运行 各有不同动画与状态徽标</li>
-    <li>成功或失败时会有庆祝 / 沮丧的表情反馈</li>
-    <li>悬浮窗置顶、可拖拽、可调大小，位置自动记忆</li>
-    <li>可切换形象：内置原创史莱姆、本地上传精灵图、在线形象库（Petdex），支持按项目设置不同形象</li>
-    <li>Settings → Tools → Desktop Pet Sprite（桌面宠物），或菜单 Tools → Desktop Pet Sprite 设置…，或双击 Shift 搜索「桌宠」</li>
-</ul>
-<br/>
-作者 <a href="https://github.com/anjiemo/">anjiemo</a> · Copyright © 2026 anjiemo · Apache License 2.0<br/>
-<br/>
-<b>Privacy</b>: No personal data is collected. Optional Petdex downloads contact petdex.dev over HTTPS only when you use that feature. <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/PRIVACY.md">Privacy Policy</a><br/>
-<b>隐私</b>：不收集个人数据；仅在使用 Petdex 时经 HTTPS 访问 petdex.dev。详见 <a href="https://github.com/anjiemo/IdeDesktopPetSprite/blob/master/docs/PRIVACY.zh-CN.md">隐私政策</a>
-    ]]></description>
+    <!-- description 由 build.gradle.kts 从 DESCRIPTION.md 注入 -->
 
     <change-notes><![CDATA[
         <b>1.0.6</b>

@@ -33,7 +33,10 @@ intellijPlatform {
     buildSearchableOptions = false
 
     pluginConfiguration {
-        // id / name / vendor / description 均在 META-INF/plugin.xml 中声明
+        // id / name / vendor 在 plugin.xml；Marketplace 描述见 DESCRIPTION.md
+        description = providers.provider {
+            layout.projectDirectory.file("DESCRIPTION.md").asFile.readText(Charsets.UTF_8)
+        }
         ideaVersion {
             sinceBuild = "242"
             // 不设 until-build，兼容 261.25134+ 等未来 AS/IDE 版本（JetBrains 2026.1 推荐做法）

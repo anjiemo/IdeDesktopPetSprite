@@ -55,7 +55,6 @@ import kotlinx.coroutines.sync.withPermit
 /**
  * 形象网格（复刻 Vibe Pet 选择器）：多列网格缩略图，按视口懒加载、并发预取，
  * 不再「点哪个才下载哪个」。
- *
  * 性能要点：网格只持有**小缩略图**（[PetThumbnails]，约 96×104），绝不缓存整张大精灵图，
  * 避免内存暴涨 / GC 抖动导致的卡顿与 IDE 无响应；滚动经防抖、且只加载可视区域附近的格子；
  * 整张精灵图仅在用户「选中」某个形象时（供右侧动态预览 / 应用）才解码，至多一两张。
@@ -68,7 +67,9 @@ class PetGridView(
     private val onActivate: (Item) -> Unit,
 ) {
 
-    /** 一个网格项：[loadThumb] 在后台线程执行（必要时下载 + 解码缩略图），失败返回 null */
+    /**
+     * 一个网格项：[loadThumb] 在后台线程执行（必要时下载 + 解码缩略图），失败返回 null
+     */
     data class Item(
         val id: String,
         val title: String,
@@ -103,7 +104,9 @@ class PetGridView(
     private val selectedCells: LinkedHashSet<Cell> = linkedSetOf()
     private var generation = 0
 
-    /** 当前选中的所有 Item（仅多选模式下有效） */
+    /**
+     * 当前选中的所有 Item（仅多选模式下有效）
+     */
     val selectedItems: List<Item> get() = selectedCells.map { it.item }
 
     // 滚动防抖：连续滚动时不反复入队，停下后再统一加载可视区域
@@ -119,7 +122,9 @@ class PetGridView(
     private var allItems: List<Item> = emptyList()
     private var displayedCount = 120
 
-    /** setItems 用的专属令牌，保证快速多次触发时只有最后一次的结果生效 */
+    /**
+     * setItems 用的专属令牌，保证快速多次触发时只有最后一次的结果生效
+     */
     private var setItemsToken = 0
 
     fun setItems(items: List<Item>, resetScroll: Boolean = true) {

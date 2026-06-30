@@ -62,12 +62,16 @@ class CharacterPickerDialog(
     private val preview = SpritePreviewComponent()
     private val selectedNameLabel = JBLabel()
 
-    /** 右侧动态预览用的整张精灵图缓存（LRU，最多保留几张，避免大图越积越多） */
+    /**
+     * 右侧动态预览用的整张精灵图缓存（LRU，最多保留几张，避免大图越积越多）
+     */
     private val previewCache = object : LinkedHashMap<String, SpriteSheet>(8, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, SpriteSheet>): Boolean =
             size > PREVIEW_CACHE_MAX
     }
-    /** slug → Pet，便于选中 Petdex 形象时按需下载整图供预览 / 应用 */
+    /**
+     * slug → Pet，便于选中 Petdex 形象时按需下载整图供预览 / 应用
+     */
     private val petByCharId = HashMap<String, PetdexClient.Pet>()
 
     // 各 tab 当前选择
@@ -448,7 +452,9 @@ class CharacterPickerDialog(
 
     // ---------------- 选择汇总 ----------------
 
-    /** 选择变化：刷新右侧预览，并按需在后台解码整图（仅被选中的形象才解码大图） */
+    /**
+     * 选择变化：刷新右侧预览，并按需在后台解码整图（仅被选中的形象才解码大图）
+     */
     private fun onSelectionChanged() {
         refreshSelection()
         selected?.let { ensurePreviewSheet(it) }
@@ -467,7 +473,9 @@ class CharacterPickerDialog(
         }
     }
 
-    /** 解码整张精灵图（Petdex 缺文件时按需下载）；不写入全局缓存，仅供本对话框预览。失败返回 null */
+    /**
+     * 解码整张精灵图（Petdex 缺文件时按需下载）；不写入全局缓存，仅供本对话框预览。失败返回 null
+     */
     private fun loadFullSheet(c: PetCharacter): SpriteSheet? {
         if (c.isBuiltin) return PetSprite.builtin
         val pet = petByCharId[c.id]

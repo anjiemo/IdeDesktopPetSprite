@@ -38,7 +38,9 @@ class PetComponent(scale: Double) : JComponent() {
             repaint()
         }
 
-    /** 当前精灵图（形象）。切换形象时替换并重绘。 */
+    /**
+     * 当前精灵图（形象）。切换形象时替换并重绘。
+     */
     var sheet: SpriteSheet = PetSprite.builtin
         set(value) {
             field = value

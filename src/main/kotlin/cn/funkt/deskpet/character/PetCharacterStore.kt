@@ -29,7 +29,6 @@ import com.intellij.util.xmlb.annotations.XMap
  * - 默认形象（全局）
  * - 按项目覆盖（projectKey → 形象 id）
  * - 已添加形象库（本地导入 + 从 Petdex 下载的）
- *
  * 内置形象不入库，以 [PetCharacter.BUILTIN] 隐式存在。
  */
 @Service(Service.Level.APP)
@@ -46,7 +45,9 @@ class PetCharacterStore : PersistentStateComponent<PetCharacterStore.State> {
     }
 
     class State {
-        /** 空 = 使用内置形象 */
+        /**
+         * 空 = 使用内置形象
+         */
         var defaultId: String = ""
 
         @get:XCollection(style = XCollection.Style.v2)
@@ -64,7 +65,9 @@ class PetCharacterStore : PersistentStateComponent<PetCharacterStore.State> {
 
     // ---- 查询 ----
 
-    /** 按 id 找形象；id 为空 / 内置 id 时返回内置；库中找不到返回 null */
+    /**
+     * 按 id 找形象；id 为空 / 内置 id 时返回内置；库中找不到返回 null
+     */
     fun find(id: String?): PetCharacter? {
         if (id.isNullOrBlank() || id == PetCharacter.BUILTIN.id) return PetCharacter.BUILTIN
         return st.library.firstOrNull { it.id == id }?.toCharacter()
@@ -72,14 +75,20 @@ class PetCharacterStore : PersistentStateComponent<PetCharacterStore.State> {
 
     fun defaultCharacter(): PetCharacter = find(st.defaultId) ?: PetCharacter.BUILTIN
 
-    /** 某项目实际使用的形象：项目覆盖优先，否则默认 */
+    /**
+     * 某项目实际使用的形象：项目覆盖优先，否则默认
+     */
     fun characterFor(projectKey: String): PetCharacter =
         find(st.projectIds[projectKey]) ?: defaultCharacter()
 
-    /** 该项目是否设置了独立形象（未设置则跟随默认） */
+    /**
+     * 该项目是否设置了独立形象（未设置则跟随默认）
+     */
     fun hasProjectOverride(projectKey: String): Boolean = st.projectIds.containsKey(projectKey)
 
-    /** 内置 + 已添加 */
+    /**
+     * 内置 + 已添加
+     */
     fun library(): List<PetCharacter> =
         buildList {
             add(PetCharacter.BUILTIN)
@@ -88,7 +97,9 @@ class PetCharacterStore : PersistentStateComponent<PetCharacterStore.State> {
 
     // ---- 变更 ----
 
-    /** 加入 / 更新库（内置忽略） */
+    /**
+     * 加入 / 更新库（内置忽略）
+     */
     fun addOrUpdate(c: PetCharacter) {
         if (c.isBuiltin) return
         val existing = st.library.firstOrNull { it.id == c.id }
@@ -107,7 +118,9 @@ class PetCharacterStore : PersistentStateComponent<PetCharacterStore.State> {
         st.defaultId = if (c.isBuiltin) "" else c.id
     }
 
-    /** 设置某项目形象；c 为 null 表示清除覆盖（跟随默认） */
+    /**
+     * 设置某项目形象；c 为 null 表示清除覆盖（跟随默认）
+     */
     fun setForProject(projectKey: String, c: PetCharacter?) {
         if (c == null) {
             st.projectIds.remove(projectKey)

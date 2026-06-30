@@ -49,7 +49,7 @@
 > 本机需 JDK 17。若 `JAVA_HOME` 未指向 17，请先设置；wrapper 已固定 Gradle 8.14.5。
 
 ```bash
-# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.2.zip）
+# 打包插件 zip（产物在 build/distributions/IdeDesktopPetSprite-1.0.3.zip）
 ./gradlew buildPlugin
 ```
 
@@ -59,7 +59,7 @@
 ```
 
 安装到你的 Android Studio：
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.2.zip`**，重启即可。
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → 选择 `build/distributions/IdeDesktopPetSprite-1.0.3.zip`**，重启即可。
 打开任意项目后桌面右下角即出现宠物。
 
 ### 想用本机真实 IDE（如 Android Studio）作为调试沙箱？
@@ -91,7 +91,7 @@ intellijPlatformTesting {
 - **本地上传** —— 从磁盘选择 PNG / WebP / GIF 网格精灵图（会复制进 IDE 缓存目录，移动/删除原文件也不受影响）。
 - **在线形象库（Petdex）** —— 以**网格缩略图**浏览并下载 [petdex.dev](https://petdex.dev) 的社区形象；缩略图随视口滚动自动加载（无需逐个点击），支持搜索与按分类筛选。
 
-入口：宠物**右键菜单 → 切换形象…**，或 **Settings → Tools → IDE Desktop Pet Sprite**——在设置页可设置**默认形象**与**按项目形象**（并预览各打开项目当前使用的形象）。
+入口：宠物**右键菜单 → 切换形象…**，或 **Settings → Tools → Desktop Pet Sprite（桌面宠物）** / **Tools → Desktop Pet Sprite 设置…** / 双击 Shift 搜索「**桌宠**」——在设置页可设置**默认形象**与**按项目形象**（并预览各打开项目当前使用的形象）。
 
 精灵图遵循 **每帧 192×208** 的网格约定；列数 / 行数按图片尺寸自动识别（内置为 8 列 × 9 行）。行语义：0=待机, 1=张望, 2=奔跑, 3=失败, 4=思考, 5=跳跃。WebP 可直接解码，无需手动转换。
 

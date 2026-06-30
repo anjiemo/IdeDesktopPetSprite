@@ -65,12 +65,16 @@ class PetWindow(private val project: Project) : JWindow() {
 
     fun setState(state: PetState) = pet.setState(state)
 
-    /** 切换形象（配置页 / 右键换装时调用） */
+    /**
+     * 切换形象（配置页 / 右键换装时调用）
+     */
     fun setSheet(sheet: SpriteSheet) {
         pet.sheet = sheet
     }
 
-    /** 应用尺寸（配置页 / 右键改尺寸时调用） */
+    /**
+     * 应用尺寸（配置页 / 右键改尺寸时调用）
+     */
     fun setScale(scale: Double) {
         pet.scale = scale
         pack()
@@ -151,7 +155,9 @@ class PetWindow(private val project: Project) : JWindow() {
         menu.show(pet, e.x, e.y)
     }
 
-    /** 打开切换形象对话框；选择结果设为本项目专用形象并实时换装 */
+    /**
+     * 打开切换形象对话框；选择结果设为本项目专用形象并实时换装
+     */
     private fun pickCharacter() {
         val store = PetCharacterStore.getInstance()
         val key = DeskPetSettings.keyOf(project)
@@ -180,7 +186,9 @@ class PetWindow(private val project: Project) : JWindow() {
         )
     }
 
-    /** 调整尺寸后若超出屏幕则拉回默认角落 */
+    /**
+     * 调整尺寸后若超出屏幕则拉回默认角落
+     */
     private fun keepOnScreen() {
         if (!centerOnSomeScreen(location.x, location.y)) defaultLocation()
     }

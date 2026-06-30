@@ -26,9 +26,7 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType
  * 监听外部系统（Gradle）任务：
  * - RESOLVE_PROJECT  → Gradle Sync（同步）
  * - EXECUTE_TASK     → Gradle 任务执行（构建 / assemble 等）
- *
  * 该监听器是应用级单例，通过 task id 反查所属项目并路由到对应 PetController。
- *
  * 这里覆盖的是单参回调签名（2024.2 接口的实际方法）。在更高版本平台上，
  * 新增的 (projectPath, id) 重载会通过默认方法链回调到这些单参方法，故新旧通用。
  */

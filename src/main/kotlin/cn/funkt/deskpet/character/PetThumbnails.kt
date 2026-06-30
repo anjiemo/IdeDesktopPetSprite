@@ -31,22 +31,27 @@ import kotlin.math.roundToInt
 
 /**
  * 形象缩略图：只解码「待机」首帧那一格（带下采样），并缓存到内存 + 磁盘。
- *
  * 关键点——绝不为了一个小缩略图把整张大精灵图（约 1536×1872 ≈ 11MB）解码进内存。
  * 网格里上百个形象若各留一张整图会占用约 1GB，导致 GC 抖动、滚动卡顿乃至 IDE 无响应。
  * 这里每个缩略图只有约 96×104，磁盘缓存让二次打开瞬时完成。
  */
 object PetThumbnails {
 
-    /** 下采样倍率：源帧 192×208，取 1/2 → 约 96×104，足够清晰且开销低 */
+    /**
+     * 下采样倍率：源帧 192×208，取 1/2 → 约 96×104，足够清晰且开销低
+     */
     private const val SAMPLE = 2
 
     private val mem = ConcurrentHashMap<String, BufferedImage>()
 
-    /** 内存命中（用于 EDT 上同步取图，避免闪烁） */
+    /**
+     * 内存命中（用于 EDT 上同步取图，避免闪烁）
+     */
     fun cached(id: String): BufferedImage? = mem[id]
 
-    /** 从精灵图文件取缩略图（内存 → 磁盘 → 区域解码）；失败返回 null。需在后台线程调用。 */
+    /**
+     * 从精灵图文件取缩略图（内存 → 磁盘 → 区域解码）；失败返回 null。需在后台线程调用。
+     */
     fun fromFile(id: String, file: File): BufferedImage? {
         mem[id]?.let {
             return it
@@ -61,7 +66,9 @@ object PetThumbnails {
         return img
     }
 
-    /** 从已在内存的整张精灵图取缩略图（内置形象用，无需读盘） */
+    /**
+     * 从已在内存的整张精灵图取缩略图（内置形象用，无需读盘）
+     */
     fun fromSheet(id: String, sheet: SpriteSheet): BufferedImage {
         mem[id]?.let {
             return it
@@ -87,7 +94,9 @@ object PetThumbnails {
         runCatching { regionDecode(file) }.getOrNull()
             ?: runCatching { fullDecodeCrop(file) }.getOrNull()
 
-    /** 只解码待机帧所在区域（解码器支持 sourceRegion / subsampling 时开销最小） */
+    /**
+     * 只解码待机帧所在区域（解码器支持 sourceRegion / subsampling 时开销最小）
+     */
     private fun regionDecode(file: File): BufferedImage? {
         WebpSupport.ensureRegistered()
         ImageIO.createImageInputStream(file)?.use { iis ->
@@ -124,7 +133,9 @@ object PetThumbnails {
         return null
     }
 
-    /** 兜底：整张解码后裁剪 + 缩小（局部变量随后即可被回收，不长期占内存） */
+    /**
+     * 兜底：整张解码后裁剪 + 缩小（局部变量随后即可被回收，不长期占内存）
+     */
     private fun fullDecodeCrop(file: File): BufferedImage? {
         val full = SpriteLoader.readImage(file) ?: return null
         val sheet = SpriteSheet(full)

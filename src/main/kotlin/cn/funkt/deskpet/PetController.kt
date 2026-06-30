@@ -33,7 +33,6 @@ import kotlinx.coroutines.*
 /**
  * 项目级状态机：汇总 sync / 编译 / gradle 任务 / 运行 等事件，
  * 计算出当前应展示的宠物状态并推给悬浮窗。
- *
  * 是否显示、尺寸、按状态响应等取自应用级 [DeskPetSettings]。
  * 所有可变状态只在 EDT 上读写，外部事件统一经 [onUi] 切到 EDT。
  */
@@ -52,17 +51,23 @@ class PetController(private val project: Project) : Disposable {
     private val settings get() = DeskPetSettings.getInstance()
     private val projectKey get() = DeskPetSettings.keyOf(project)
 
-    /** 全局启用、且该项目未被「永久关闭」，才允许显示 */
+    /**
+     * 全局启用、且该项目未被「永久关闭」，才允许显示
+     */
     private fun isAllowed(): Boolean = settings.enabled && !settings.isHidden(projectKey)
 
-    /** 项目打开时调用：创建并展示待机宠物 */
+    /**
+     * 项目打开时调用：创建并展示待机宠物
+     */
     fun start() = onUi {
         if (!isAllowed()) return@onUi
         ensureWindow()
         applyState(baseState())
     }
 
-    /** 某项活动开始 */
+    /**
+     * 某项活动开始
+     */
     fun onStart(key: String) = onUi {
         if (!settings.reactsTo(key) || !isAllowed()) return@onUi
         cancelFlash()
@@ -85,7 +90,9 @@ class PetController(private val project: Project) : Disposable {
         }
     }
 
-    /** 设置变化后实时生效（配置页 Apply 调用） */
+    /**
+     * 设置变化后实时生效（配置页 Apply 调用）
+     */
     fun applySettings() = onUi {
         if (!isAllowed()) {
             // 总开关关闭或本项目被永久关闭 → 收起窗口
@@ -101,7 +108,9 @@ class PetController(private val project: Project) : Disposable {
         applyState(baseState())
     }
 
-    /** 形象切换后实时换装 */
+    /**
+     * 形象切换后实时换装
+     */
     fun applyCharacter() = onUi {
         if (!isAllowed()) return@onUi
         ensureWindow()
@@ -118,11 +127,15 @@ class PetController(private val project: Project) : Disposable {
         }
     }
 
-    /** 解析本项目当前应使用的精灵图（形象） */
+    /**
+     * 解析本项目当前应使用的精灵图（形象）
+     */
     private fun currentSheet() =
         SpriteLoader.load(PetCharacterStore.getInstance().characterFor(projectKey))
 
-    /** 优先级：运行 > 构建/编译/Gradle 任务 > 同步 > 索引 > 待机 */
+    /**
+     * 优先级：运行 > 构建/编译/Gradle 任务 > 同步 > 索引 > 待机
+     */
     private fun baseState(): PetState = when {
         KEY_RUN in active -> PetState.RUNNING
         KEY_COMPILE in active || KEY_GRADLE in active -> PetState.BUILDING

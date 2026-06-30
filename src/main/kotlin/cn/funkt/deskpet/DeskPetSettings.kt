@@ -38,7 +38,9 @@ class DeskPetSettings : PersistentStateComponent<DeskPetSettings.State> {
         var reactBuild: Boolean = true
         var reactRun: Boolean = true
 
-        /** 被「永久关闭」的项目 key（basePath，缺省回退 name） */
+        /**
+         * 被「永久关闭」的项目 key（basePath，缺省回退 name）
+         */
         var hiddenKeys: MutableList<String> = ArrayList()
     }
 
@@ -60,7 +62,9 @@ class DeskPetSettings : PersistentStateComponent<DeskPetSettings.State> {
             st.size = v
         }
 
-    /** 默认尺寸对应的缩放系数 */
+    /**
+     * 默认尺寸对应的缩放系数
+     */
     val scale: Double
         get() = when (st.size) {
             "S" -> 0.45
@@ -89,7 +93,9 @@ class DeskPetSettings : PersistentStateComponent<DeskPetSettings.State> {
             st.reactRun = v
         }
 
-    /** 某类活动是否响应 */
+    /**
+     * 某类活动是否响应
+     */
     fun reactsTo(key: String): Boolean = when (key) {
         PetController.KEY_SYNC -> st.reactSync
         PetController.KEY_INDEX -> st.reactIndex
@@ -111,10 +117,14 @@ class DeskPetSettings : PersistentStateComponent<DeskPetSettings.State> {
         fun getInstance(): DeskPetSettings =
             ApplicationManager.getApplication().getService(DeskPetSettings::class.java)
 
-        /** 项目唯一键：优先 basePath，回退 name */
+        /**
+         * 项目唯一键：优先 basePath，回退 name
+         */
         fun keyOf(project: Project): String = project.basePath ?: project.name
 
-        /** 由 key 推断展示名（已关闭项目时用） */
+        /**
+         * 由 key 推断展示名（已关闭项目时用）
+         */
         fun displayName(key: String): String {
             val norm = key.trimEnd('/', '\\')
             val seg = norm.substringAfterLast('/').substringAfterLast('\\')

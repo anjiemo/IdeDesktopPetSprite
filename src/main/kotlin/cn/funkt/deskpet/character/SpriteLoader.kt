@@ -32,7 +32,9 @@ object SpriteLoader {
 
     private val cache = ConcurrentHashMap<String, SpriteSheet>()
 
-    /** 解析为精灵图；任何失败都回退到内置形象，保证宠物始终有图可画 */
+    /**
+     * 解析为精灵图；任何失败都回退到内置形象，保证宠物始终有图可画
+     */
     fun load(c: PetCharacter): SpriteSheet {
         if (c.isBuiltin) return PetSprite.builtin
         cache[c.id]?.let {
@@ -50,7 +52,9 @@ object SpriteLoader {
         return PetSprite.builtin
     }
 
-    /** 读取任意精灵图文件（用于导入校验 / 预览），失败返回 null */
+    /**
+     * 读取任意精灵图文件（用于导入校验 / 预览），失败返回 null
+     */
     fun readFile(path: String?): BufferedImage? {
         if (path.isNullOrBlank()) return null
         val file = File(path)
@@ -64,7 +68,9 @@ object SpriteLoader {
         return if (SpriteSheet.isValid(img)) img else null
     }
 
-    /** 预置已解码好的精灵图（如选择器已下载/解码完成），后续 [load] 直接命中，避免重复解码 */
+    /**
+     * 预置已解码好的精灵图（如选择器已下载/解码完成），后续 [load] 直接命中，避免重复解码
+     */
     fun prime(id: String, sheet: SpriteSheet) {
         cache[id] = sheet
     }
@@ -78,10 +84,14 @@ object SpriteLoader {
         runCatching { cacheDir().deleteRecursively() }
     }
 
-    /** 形象精灵图缓存目录（Petdex 下载 / 本地导入副本都放这里） */
+    /**
+     * 形象精灵图缓存目录（Petdex 下载 / 本地导入副本都放这里）
+     */
     fun cacheDir(): File = File(PathManager.getSystemPath(), "ideDeskPet/pets").apply { mkdirs() }
 
-    /** 把本地选中的精灵图复制进缓存目录，避免用户移动/删除原文件后失效 */
+    /**
+     * 把本地选中的精灵图复制进缓存目录，避免用户移动/删除原文件后失效
+     */
     fun importLocalFile(src: File): File {
         val ext = src.extension.lowercase().ifBlank { "png" }
         val dest = File(cacheDir(), "local-${src.absolutePath.hashCode().toUInt()}-${src.length()}.$ext")

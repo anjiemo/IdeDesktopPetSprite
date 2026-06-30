@@ -16,7 +16,9 @@
 
 package cn.funkt.deskpet.character
 
-/** 形象来源 */
+/**
+ * 形象来源
+ */
 enum class CharacterSource { BUILTIN, LOCAL, PETDEX }
 
 /**
@@ -28,14 +30,20 @@ data class PetCharacter(
     val displayName: String,
     val source: CharacterSource,
     val submittedBy: String = "",
-    /** 本地文件 / Petdex 下载缓存的精灵图路径 */
+    /**
+     * 本地文件 / Petdex 下载缓存的精灵图路径
+     */
     val filePath: String? = null,
-    /** Petdex 远程精灵图地址（仅记录，便于重新下载） */
+    /**
+     * Petdex 远程精灵图地址（仅记录，便于重新下载）
+     */
     val spritesheetUrl: String? = null,
 ) {
     val isBuiltin: Boolean get() = source == CharacterSource.BUILTIN
 
-    /** 列表里展示的副标题：作者 / 来源 */
+    /**
+     * 列表里展示的副标题：作者 / 来源
+     */
     val subtitle: String
         get() = when (source) {
             CharacterSource.BUILTIN -> "内置"
@@ -44,7 +52,9 @@ data class PetCharacter(
         }
 
     companion object {
-        /** 内置默认形象（原创史莱姆 Gel） */
+        /**
+         * 内置默认形象（原创史莱姆 Gel）
+         */
         val BUILTIN = PetCharacter(
             id = "gel-slime",
             displayName = "Gel 史莱姆",

@@ -29,7 +29,6 @@ import java.nio.file.Paths
 
 /**
  * Petdex 在线形象库客户端：拉取清单、下载精灵图到本地缓存。
- *
  * 仅信任 [ASSET_HOST] 上的 https 资源（与 Petdex 官方约定一致），避免任意地址下载。
  * 形象数据来源：https://petdex.dev （社区形象库）。
  */
@@ -57,7 +56,9 @@ object PetdexClient {
     @Volatile
     private var inMemoryManifest: List<Pet>? = null
 
-    /** 拉取并解析清单（网络调用，需在后台线程执行）；成功后落盘缓存，供下次秒开 */
+    /**
+     * 拉取并解析清单（网络调用，需在后台线程执行）；成功后落盘缓存，供下次秒开
+     */
     fun fetchManifest(indicator: ProgressIndicator? = null): List<Pet> {
         val text = HttpRequests.request(MANIFEST_URL)
             .accept("application/json")
@@ -71,7 +72,9 @@ object PetdexClient {
         return pets
     }
 
-    /** 读取上次落盘的清单缓存（无网络，瞬时）；没有或损坏返回 null */
+    /**
+     * 读取上次落盘的清单缓存（无网络，瞬时）；没有或损坏返回 null
+     */
     fun cachedManifest(): List<Pet>? {
         val mem = inMemoryManifest
         if (mem != null) return mem
@@ -110,11 +113,15 @@ object PetdexClient {
         )
     }
 
-    /** 该形象在本地缓存中的确定路径（无需先下载即可推算，便于先建形象再异步取图） */
+    /**
+     * 该形象在本地缓存中的确定路径（无需先下载即可推算，便于先建形象再异步取图）
+     */
     fun cacheFileFor(pet: Pet): File =
         cacheDir().resolve("${sanitize(pet.slug)}.${extOf(pet.spritesheetUrl)}").toFile()
 
-    /** 下载精灵图到缓存目录，返回本地文件（网络调用，需在后台线程执行）。已存在则直接复用，避免重复下载。 */
+    /**
+     * 下载精灵图到缓存目录，返回本地文件（网络调用，需在后台线程执行）。已存在则直接复用，避免重复下载。
+     */
     fun download(pet: Pet, indicator: ProgressIndicator? = null): File {
         require(isAllowed(pet.spritesheetUrl)) { "非法的形象地址：${pet.spritesheetUrl}" }
         val file = cacheFileFor(pet)
@@ -135,7 +142,9 @@ object PetdexClient {
         return file
     }
 
-    /** 由 Petdex 条目构造形象（filePath 指向其确定的缓存路径，可在下载完成前先行构造） */
+    /**
+     * 由 Petdex 条目构造形象（filePath 指向其确定的缓存路径，可在下载完成前先行构造）
+     */
     fun toCharacter(pet: Pet, file: File = cacheFileFor(pet)): PetCharacter = PetCharacter(
         id = "petdex:${pet.slug}",
         displayName = pet.displayName,

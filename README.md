@@ -48,7 +48,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 > Requires JDK 17 locally. If `JAVA_HOME` doesn't point to 17, set it first; the wrapper is pinned to Gradle 8.14.5.
 
 ```bash
-# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.2.zip)
+# Package the plugin zip (output at build/distributions/IdeDesktopPetSprite-1.0.3.zip)
 ./gradlew buildPlugin
 ```
 
@@ -58,7 +58,7 @@ An Android Studio / IntelliJ plugin: across **Gradle sync, build/compile, run/de
 ```
 
 Install into your Android Studio:
-**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.2.zip`**, then restart.
+**Settings → Plugins → ⚙ → Install Plugin from Disk… → choose `build/distributions/IdeDesktopPetSprite-1.0.3.zip`**, then restart.
 Open any project and the pet appears at the bottom-right of the desktop.
 
 ### Want to use your local IDE (e.g. Android Studio) as the debug sandbox?
@@ -90,8 +90,8 @@ You can switch the pet's character at runtime — no rebuild needed:
 - **Local upload** — pick a PNG / WebP / GIF sprite sheet from disk (it is copied into the IDE cache so moving the original won't break it).
 - **Online catalog (Petdex)** — browse and download community characters from [petdex.dev](https://petdex.dev) in a **thumbnail grid** that loads lazily as you scroll (no per-item clicking), with search and kind filtering.
 
-Open the picker from the pet's **right-click menu → Switch character…**, or from
-**Settings → Tools → IDE Desktop Pet Sprite**, where you can set the **default character** and a **per-project character** (each open project's current character is previewed there).
+Open the picker from the pet's **right-click menu → Switch character…**, from
+**Settings → Tools → Desktop Pet Sprite（桌面宠物）**, **Tools → Desktop Pet Sprite 设置…**, or double-Shift search **「桌宠」** / **Desktop Pet** — set the **default character** and **per-project character** there.
 
 Sprite sheets follow the grid convention **192×208 per frame**; columns / rows are auto-detected from the image size (the built-in sheet is 8 cols × 9 rows). Row semantics: 0=idle, 1=look, 2=run, 3=fail, 4=think, 5=jump. WebP is decoded directly (no manual conversion needed).
 

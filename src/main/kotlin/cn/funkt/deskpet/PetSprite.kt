@@ -24,7 +24,6 @@ import kotlin.math.roundToInt
 /**
  * 一张精灵图（网格动画表）。每帧固定 [FRAME_W]×[FRAME_H]，
  * 列数 / 行数按图片实际尺寸自动推算（与 Petdex 约定一致）。
- *
  * 内置素材为 8 列 × 9 行；从 Petdex / 本地导入的精灵图允许任意网格。
  */
 class SpriteSheet(val image: BufferedImage) {
@@ -32,7 +31,9 @@ class SpriteSheet(val image: BufferedImage) {
     val cols: Int = max(1, (image.width.toDouble() / FRAME_W).roundToInt())
     val rows: Int = max(1, (image.height.toDouble() / FRAME_H).roundToInt())
 
-    /** 取出第 row 行、第 col 列的一帧（越界自动夹紧） */
+    /**
+     * 取出第 row 行、第 col 列的一帧（越界自动夹紧）
+     */
     fun frame(col: Int, row: Int): BufferedImage {
         val c = col.coerceIn(0, cols - 1)
         val r = row.coerceIn(0, rows - 1)
@@ -43,7 +44,9 @@ class SpriteSheet(val image: BufferedImage) {
         const val FRAME_W = 192
         const val FRAME_H = 208
 
-        /** 校验一张图是否能作为有效精灵图（至少能切出一帧） */
+        /**
+         * 校验一张图是否能作为有效精灵图（至少能切出一帧）
+         */
         fun isValid(image: BufferedImage): Boolean =
             image.width >= FRAME_W && image.height >= FRAME_H
     }

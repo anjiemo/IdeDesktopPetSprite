@@ -41,7 +41,7 @@ import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 
 /**
- * Settings → Tools → IDE Desktop Pet Sprite 配置页。
+ * Settings → Tools → Desktop Pet Sprite（桌面宠物）配置页。
  */
 class DeskPetConfigurable : Configurable {
 
@@ -63,10 +63,19 @@ class DeskPetConfigurable : Configurable {
     private val followDefaultBtn = JButton("跟随默认形象")
     private val clearCacheBtn = JButton("清除下载及缩略图缓存")
 
-    /** item = 项目 key；勾选 = 显示（未被永久关闭） */
+    /**
+     * item = 项目 key；勾选 = 显示（未被永久关闭）
+     */
     private val projectList = CheckBoxList<String>()
 
-    override fun getDisplayName(): String = "IDE Desktop Pet Sprite"
+    override fun getDisplayName(): String = DISPLAY_NAME
+
+    companion object {
+        /**
+         * 设置页左侧列表显示名；以 D 开头便于 Tools 分组内字母序靠前，配合 plugin.xml groupWeight。
+         */
+        const val DISPLAY_NAME = "Desktop Pet Sprite（桌面宠物）"
+    }
 
     override fun createComponent(): JComponent {
         projectList.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION

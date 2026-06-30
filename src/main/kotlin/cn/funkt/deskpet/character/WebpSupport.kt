@@ -22,7 +22,6 @@ import javax.imageio.spi.IIORegistry
 
 /**
  * 让 [javax.imageio.ImageIO] 支持解码 WebP。
- *
  * IntelliJ 插件运行在独立的类加载器中，默认的 IIORegistry 不会扫描到插件 jar
  * 里 META-INF/services 声明的 ImageIO 插件，因此这里手动把 TwelveMonkeys 的
  * WebP 读取 SPI 注册进去。注册一次即可，全进程生效。
